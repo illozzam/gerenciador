@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Adicionar Cliente{% endblock titulo %}
+
+{% block breadcrumb %}
+	<ol class="breadcrumb">
+		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li class="active">Adicionar Cliente</li>
+	</ol>
+{% endblock breadcrumb %}
+
+{% block controles %}
+	<div class="row">
+		<div class="col-md-12" id="alertas"></div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-body">
+
+					<div class="row">
+						<div class="col-md-12">
+							<h4 class="text-primary subtitulo">Dados Gerais</h4>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">Tipo:</div>
+						<div class="col-md-10">
+							<select id="tipo" class="form-control" onChange="processaTiposPessoa(this);">
+								<option value="F" selected>Pessoa Física</option>
+								<option value="J">Pessoa Jurídica</option>
+							</select>
+						</div>
+					</div>
+
+					<div id="pessoaFisica">
+						<div class="row" style="padding-top: 10px;">
+							<div class="col-md-2">Nome:</div>
+							<div class="col-md-4"><input type="text" class="form-control" id="nome"></div>
+							<div class="col-md-2">Sobrenome:</div>
+							<div class="col-md-4"><input type="text" class="form-control" id="sobrenome"></div>
+						</div>
+
+						<div class="row" style="padding-top: 10px;">
+							<div class="col-md-2">CPF:</div>
+							<div class="col-md-4"><input type="text" class="form-control" id="cpf" onBlur="formataCPF(this)"></div>
+							<div class="col-md-2"></div>
+							<div class="col-md-4"></div>
+						</div>
+					</div>
+
+					<div id="pessoaJuridica" style="display: none;">
+						<div class="row" style="padding-top: 10px;">
+							<div class="col-md-2">Razão Social:</div>
+							<div class="col-md-4"><input type="text" class="form-control" id="razaoSocial"></div>
+							<div class="col-md-2">Responsável:</div>
+							<div class="col-md-4"><input type="text" class="form-control" id="responsavel"></div>
+						</div>
+
+						<div class="row" style="padding-top: 10px;">
+							<div class="col-md-2">CNPJ:</div>
+							<div class="col-md-4"><input type="text" class="form-control" id="cnpj"></div>
+							<div class="col-md-2"></div>
+							<div class="col-md-4"></div>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">E-mail:</div>
+						<div class="col-md-4"><input type="email" class="form-control" id="email" required></div>
+						<div class="col-md-2">Telefone:</div>
+						<div class="col-md-4"><input type="text" class="form-control" id="telefone" onBlur="formataTelefone(this)"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-12">
+							<h4 class="text-primary subtitulo">Endereço</h4>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">CEP:</div>
+						<div class="col-md-4"><input type="text" class="form-control" id="cep" onBlur="pesquisaCep()"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">Endereço:</div>
+						<div class="col-md-6"><input type="text" class="form-control" id="endereco"></div>
+						<div class="col-md-2">Número:</div>
+						<div class="col-md-2"><input type="text" class="form-control" id="numero"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">Complemento:</div>
+						<div class="col-md-4"><input type="text" class="form-control" id="complemento"></div>
+						<div class="col-md-2">Bairro:</div>
+						<div class="col-md-4"><input type="text" class="form-control" id="bairro"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">Estado:</div>
+						<div class="col-md-4">
+							<select id="estado" onChange="preencheCidades()" class="form-control">
+								<option value="0" selected disabled>Selecione...</option>
+								{% for estado in estados %}
+									<option value="{{estado.uf}}">{{estado.nome}}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-md-2">Cidade:</div>
+						<div class="col-md-4">
+							<select id="cidade" class="form-control">
+								<option value="0" selected disabled>Selecione...</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 30px;">
+						<div class="col-md-12 text-center">
+							<a href="javascript:cadastraCliente();" class="btn btn-flat btn-primary btn-lg">
+								<span class="btn-label icon fa fa-check"></span>
+								Enviar
+							</a>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock controles %}
+
+{% block processamento %}
+	<script language="javascript">
+		function processaTiposPessoa(controle) {
+			if (controle.value == 'F') { //Se for selecionado "Pessoa Física"
+				document.getElementById('pessoaFisica').style.display = 'block'
+				document.getElementById('pessoaJuridica').style.display = 'none'
+			} else {
+				document.getElementById('pessoaFisica').style.display = 'none'
+				document.getElementById('pessoaJuridica').style.display = 'block'
+			}
+		}
+
+		function limpaFormulario() {
+			$('#tipo').val('F')
+			$('#nome').val('')
+			$('#sobrenome').val('')
+			$('#cpf').val('')
+			$('#razaoSocial').val('')
+			$('#responsavel').val('')
+			$('#cnpj').val('')
+			$('#email').val('')
+			$('#telefone').val('')
+			$('#cep').val('')
+			$('#endereco').val('')
+			$('#numero').val('')
+			$('#complemento').val('')
+			$('#bairro').val('')
+			$('#estado').val('0')
+			$('#cidade').val('0')
+		}
+
+		function preencheCidades() {
+			var estado = $('#estado').val()
+
+			$('#cidade').html('<option value="0" selected disabled>Selecione...</option>')
+
+			$.ajax({url: '/listarCidades/', data: 'estado=' + estado, async: false, success: function(resposta) {
+				for (i=0; i<resposta.length; i++) {
+					$('#cidade option:last').after(`
+						<option value="${resposta[i].id}">${resposta[i].nome}</option>
+					`)
+				}
+			}})
+		}
+
+		function verificaCPF(strCPF) {
+			var Soma;
+			var Resto;
+			Soma = 0;
+			if (strCPF == "00000000000") return false;
+
+			for (i=1; i<=9; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (11 - i);
+			Resto = (Soma * 10) % 11;
+
+			if ((Resto == 10) || (Resto == 11))  Resto = 0;
+			if (Resto != parseInt(strCPF.substring(9, 10)) ) return false;
+
+			Soma = 0;
+			for (i = 1; i <= 10; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (12 - i);
+			Resto = (Soma * 10) % 11;
+
+			if ((Resto == 10) || (Resto == 11))  Resto = 0;
+			if (Resto != parseInt(strCPF.substring(10, 11) ) ) return false;
+			return true;
+		}
+
+		function formataCPF(controle) {
+			var cpf = controle.value
+			cpf = cpf.replace('.', '').replace('-', '')
+			if (cpf.length == 11) {
+				var formatado = cpf.substring(0, 3) + '.' + cpf.substring(3, 6) + '.' + cpf.substring(6, 9) + '-' + cpf.substring(9, 11)
+				$(controle).val(formatado)
+			}
+
+			if (!verificaCPF(cpf)) {
+				$('#cpf').addClass('erro')
+			} else {
+				$('#cpf').removeClass('erro')
+			}
+		}
+
+		function formataTelefone(controle) {
+			var telefone = controle.value
+			telefone = telefone.replace('-', '').replace('(','').replace(')', '').replace(' ', '')
+			if (telefone.length == 8) {
+				var formatado = '(48) ' + telefone.substring(0, 4) + '-' + telefone.substring(4, 8)
+			} else if (telefone.length == 9) {
+				var formatado = '(48) ' + telefone.substring(0, 1) + ' ' + telefone.substring(1, 5) + '-' + telefone.substring(5, 9)
+			} else if (telefone.length == 10) {
+				var formatado = '(' + telefone.substring(0, 2) + ') ' + telefone.substring(2, 6) + '-' + telefone.substring(6, 10)
+			} else if (telefone.length == 11) {
+				var formatado = '(' + telefone.substring(0, 2) + ') ' + telefone.substring(2, 3) + ' ' + telefone.substring(3, 7) + '-' + telefone.substring(7, 11)
+			}
+			$(controle).val(formatado)
+		}
+
+		function pesquisaCep() {
+			entrada = $('#cep').val().replace('-', '');
+
+			$.get('https://viacep.com.br/ws/' + entrada + '/json/', function(endereco) {
+				$('#endereco').val(endereco.logradouro)
+				$('#bairro').val(endereco.bairro)
+				$('#estado').val(endereco.uf)
+
+				preencheCidades()
+
+				for (i = 1; i < document.getElementById('cidade').options.length; i++) {
+					if (document.getElementById('cidade').item(i).innerText === endereco.localidade) {
+						document.getElementById('cidade').selectedIndex = i
+					}
+				}
+
+				$('#numero').focus()
+			})
+			$('#cep').val(entrada.substring(0,5) + '-' + entrada.substring(5, 8))
+		}
+
+		function verificaDados() {
+			//TODO: Programar a função para verificar se os dados estão corretos antes de enviá-los ao servidor
+			return true
+		}
+
+		function cadastraCliente() {
+			if (verificaDados()) {
+				dados = {
+					tipo: $('#tipo').val(),
+					nome: $('#nome').val(),
+					sobrenome: $('#sobrenome').val(),
+					cpf: $('#cpf').val(),
+					razaoSocial: $('#razaoSocial').val(),
+					responsavel: $('#responsavel').val(),
+					cnpj: $('#cnpj').val(),
+					email: $('#email').val(),
+					telefone: $('#telefone').val(),
+					cep: $('#cep').val(),
+					endereco: $('#endereco').val(),
+					numero: $('#numero').val(),
+					complemento: $('#complemento').val(),
+					bairro: $('#bairro').val(),
+					cidade: $('#cidade').val(),
+				}
+
+				$.post('{% url 'cadastrarCliente' %}', dados)
+				.done(function(resposta){
+					if (resposta.status == 1) {
+						$('#alertas').html('<div class="alert alert-success">Cliente cadastrado com sucesso!</div>')
+					} else {
+						$('#alertas').html('<div class="alert alert-danger">Erro: ' + resposta.erro + '</div>')
+					}
+				})
+				.fail(function(resposta) {
+					$('#alertas').html('<div class="alert alert-danger">' + resposta.responseText + '</div>')
+				})
+			}
+		}
+	</script>
+{% endblock processamento %}

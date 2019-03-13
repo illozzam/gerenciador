@@ -1,0 +1,10 @@
+/* Agenda de Tarefas */
+.tarefa {color: #000; font-size: 18px;}
+.tarefa:hover {color: #000; text-decoration: none;}
+
+.prioridade {font-size: 18px;}
+.prioridade:hover {color: #ee0; text-decoration: none;}
+.prioridade-1 {color: #d00;}
+.prioridade-2 {color: #dd0;}
+.prioridade-3 {color: #0d0;}
+.prioridade-4 {color: #aaa;}

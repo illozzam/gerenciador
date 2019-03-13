@@ -1,0 +1,538 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block titulo %}Criar Consultoria{% endblock titulo %}
+
+{% block cabecalho %}
+	<link rel="stylesheet" href="{% static 'bibliotecas/bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}">
+{% endblock cabecalho %}
+
+{% block breadcrumb %}
+	<ol class="breadcrumb">
+		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li class="active">Criar Consultoria</li>
+	</ol>
+{% endblock breadcrumb %}
+
+{% block controles %}
+	<div class="row">
+		<div class="col-md-12">
+			<p class="negrito" id="consultoriasHoje">Consultorias Hoje: {{consultoriasHoje}}</p>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-header with-borders">
+					<div class="box-title">Dados da Consultoria</div>
+				</div>
+				<div class="box-body">
+
+					<div class="row">
+						<div class="col-md-2">Ramo de Atividade:</div>
+						<div class="col-md-4">
+							<select id="ramoAtividade" class="form-control">
+								<option value="0" selected disabled>Selecione...</option>
+								{% for ramo in ramosAtividade %}
+									<option value="{{ramo.id}}">{{ramo.nome}}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-md-1">
+							<a href="javascript:modalAdicionaRamoAtividade()" class="btn btn-flat btn-primary">
+							<i class="fa fa-plus"></i>
+							</a>
+						</div>
+						<div class="col-md-2">Nome da Empresa:</div>
+						<div class="col-md-3"><input type="text" class="form-control input-sm" id="nomeEmpresa"></div>
+					</div>
+
+					<div class="row" style="padding-top: 5px;">
+						<div class="col-md-2">E-mail:</div>
+						<div class="col-md-4"><input type="email" class="form-control input-sm" id="emailEmpresa" onkeyup="preencheDominio()"></div>
+						<div class="col-md-2">Enviar em:</div>
+						<div class="col-md-4"><input type="text" class="form-control input-sm" id="dataHoraEnvio"></div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Abas do menu -->
+	<div>
+		<!-- Nav tabs -->
+		<ul class="nav nav-tabs" role="tablist">
+			<li role="presentation" class="active"><a href="#empresaComSite" aria-controls="empresaComSite" role="tab" data-toggle="tab">Empresa com site</a></li>
+			<li role="presentation"><a href="#empresaSemSite" aria-controls="empresaSemSite" role="tab" data-toggle="tab">Empresa sem site</a></li>
+			<li role="presentation"><a href="#consultoriaSEO" aria-controls="consultoriaSEO" role="tab" data-toggle="tab">Consultoria SEO</a></li>
+		</ul>
+
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="empresaComSite">
+
+				<!-- Empresa com site -->
+				<div class="row">
+					<div class="col-md-12">
+						<div class="box">
+							<div class="box-header with-borders">
+								<div class="box-title">Dados do Site</div>
+							</div>
+							<div class="box-body">
+
+								<div class="row">
+									<div class="col-md-2">Domínio:</div>
+									<div class="col-md-4"><input type="text" class="form-control input-sm" id="dominio"></div>
+									<div class="col-md-2">Nome da página avulsa:</div>
+									<div class="col-md-4"><input type="text" class="form-control input-sm" id="nomePaginaAvulsa"></div>
+								</div>
+
+								<div class="row" style="padding-top: 5px;">
+									<div class="col-md-2">URL da página avulsa:</div>
+									<div class="col-md-10"><input type="text" class="form-control input-sm" id="urlPaginaAvulsa"></div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12">
+						<div class="box">
+							<div class="box-header with-borders">
+								<div class="box-title">Print do Site</div>
+							</div>
+							<div class="box-body">
+
+								<div class="row">
+									<div class="col-md-6"><input type="file" id="printSite"></div>
+									<div class="col-md-6"><a href="javascript:uploadPrintSite()" class="btn btn-flat btn-primary">Enviar Arquivo</a></div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12">
+						<div class="box">
+							<div class="box-header with-borders">
+								<div class="box-title">Características do Site</div>
+							</div>
+							<div class="box-body">
+								<div class="row">
+									<div class="col-md-6">
+										<div class="checkbox">
+											<label><input type="checkbox" id="semHTTPS">&nbsp;Sem HTTPS</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="naoResponsivo">&nbsp;Não Responsivo</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="naoPossuiUrlsAmigaveis">&nbsp;Não possui URLs amigáveis</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="semAnalytics">&nbsp;Sem Analytics</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="margemMuitoGrande">&nbsp;Margem muito grande</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="siteSemLogotipo">&nbsp;Site sem logotipo</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="imagensBaixaDefinicao">&nbsp;Imagens em baixa definição</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="semMapaGoogle">&nbsp;Sem mapa do Google</label>
+										</div>
+										<div class="checkbox">
+											<div class="col-md-8" style="margin: 0; padding: 0;">
+												<label><input type="checkbox" id="emailNaoPersonalizado">&nbsp;E-mail não personalizado</label>
+											</div>
+											<div class="col-md-4">
+												<input type="text" class="form-control input-sm" id="servidorAtualEmail" placeholder="Servidor">
+											</div>
+										</div>
+
+									</div>
+
+									<div class="col-md-6">
+										<div class="checkbox">
+											<label><input type="checkbox" id="semFormularioContato">&nbsp;Sem formulário de contato</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="logotipoDesfocado">&nbsp;Logotipo desfocado</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="menusDemaisConfusos">&nbsp;Menus demais e confusos</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="homeCarregada">&nbsp;Home muito carregada</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="depoimentosSemDepoimentos">&nbsp;Área de depoimentos sem depoimentos</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="naoSobreEmpresa">&nbsp;Não há Sobre a Empresa e afins</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="siteFlash">&nbsp;Site em Flash ou conteúdo nessa tecnologia</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="novidadesNaoAtualizada">&nbsp;Página de novidades não atualizada</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="semLinkFacebook">&nbsp;Site sem link para Facebook</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="facebookNaoAtualizado">&nbsp;Facebook não atualizado</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="facebookPerfil">&nbsp;Facebook Perfil</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="facebookInuteis">&nbsp;Facebook com informações inúteis para a empresa</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="semFacebook">&nbsp;Empresa sem Facebook</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="facebookPoucasCurtidas">&nbsp;Facebook com poucas curtidas</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="facebookOK">&nbsp;Facebook OK</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="referenciasMSN">&nbsp;Links ou referências ao MSN</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="referenciasOrkut">&nbsp;Links ou referências ao Orkut</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="efeitosSonoros">&nbsp;Efeitos sonoros no site</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12">
+						<div class="box">
+							<div class="box-header with-borders">
+								<div class="box-title">Outros comentários</div>
+							</div>
+							<div class="box-body">
+								<div class="row">
+									<div class="col-md-12"><textarea id="outrosComentarios" rows="5" class="form-control"></textarea></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12 text-center"><a href="javascript:enviarComSite()" class="btn btn-primary btn-flat">Enviar</a></div>
+				</div>
+
+				<!-- Fim de empresa com site -->
+			</div>
+
+			<div role="tabpanel" class="tab-pane" id="empresaSemSite">
+
+				<!-- Empresa sem site -->
+				<div class="row">
+					<div class="col-md-12">
+						<div class="box">
+							<div class="box-header with-borders">
+								<div class="box-title">Dados Adicionais</div>
+							</div>
+							<div class="box-body">
+
+								<div class="row">
+									<div class="col-md-2">Meio de Comunicação:</div>
+									<div class="col-md-4"><input type="text" id="meioComunicacao" class="form-control input-sm"></div>
+									<div class="col-md-2">Possível Domínio:</div>
+									<div class="col-md-4"><input type="text" id="possivelDominio" class="form-control input-sm"></div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12 text-center"><a href="javascript:enviarSemSite()" class="btn btn-primary btn-flat">Enviar</a></div>
+				</div>
+				<!-- Fim de Empresa sem site -->
+
+			</div>
+
+			<div role="tabpanel" class="tab-pane" id="consultoriaSEO">
+
+				<!-- Consultoria SEO -->
+				<div class="row">
+					<div class="col-md-12">
+						<div class="box">
+							<div class="box-header with-borders">
+								<div class="box-title">Dados Adicionais</div>
+							</div>
+							<div class="box-body">
+
+								<div class="row">
+									<div class="col-md-12">
+										<div class="checkbox">
+											<label><input type="checkbox" id="semConteudoProprio">&nbsp;Não possui conteúdo próprio</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="facebookPerfilSEO">&nbsp;Facebook perfil</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="facebookNaoAtualizadoSEO">&nbsp;Facebook não atualizado</label>
+										</div>
+										<div class="checkbox">
+											<label><input type="checkbox" id="conteudoNaoRelevanteSEO">&nbsp;Conteúdo não relevante para a empresa</label>
+										</div>
+										<div class="checkbox">
+											<div class="col-md-8" style="margin: 0; padding: 0;">
+												<label><input type="checkbox" id="possuiMuitasCurtidas">&nbsp;Possui muitas curtidas</label>
+											</div>
+											<div class="col-md-4">
+												<input type="number" class="form-control input-sm" id="qtdadeCurtidas" placeholder="Quantas?">
+											</div>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12 text-center"><a href="javascript:enviarConsultoriaSEO()" class="btn btn-primary btn-flat">Enviar</a></div>
+				</div>
+				<!-- Fim da consultoria SEO -->
+
+			</div>
+		</div>
+
+	</div>
+{% endblock controles %}
+
+{% block processamento %}
+	<script src="{% static 'bibliotecas/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
+
+	<script type="text/javascript">
+
+		$(document).ready(function() {
+			hoje = new Date()
+			$('#dataHoraEnvio').datetimepicker({
+				locale: 'pt-BR',
+				sideBySide: true
+			})
+		})
+
+		function limpaFormulario() {
+			$('input:checked').each(function() {
+				$(this).prop('checked', false)
+			})
+			$('input[type=text], input[type=email], input[type=number], textarea').each(function() {
+				$(this).val('')
+			})
+			$('select').each(function() {
+				$(this).val('0')
+			})
+		}
+
+		function preencheDominio() {
+			var email = $('#emailEmpresa').val()
+			if (email.includes('@')) {
+				$('#dominio').val(email.split('@')[1])
+			}
+		}
+
+		function enviarComSite() {
+			assinalados = new Array()
+
+			$('input:checked').each(function(indice, controle) {
+				assinalados.push(controle.id)
+			})
+
+			dados = {
+				opcao: 'comSite',
+				//printSite: $('#printSite')[0].files[0].name,
+				ramoAtividade: $('#ramoAtividade').val(),
+				nomeEmpresa: $('#nomeEmpresa').val(),
+				emailEmpresa: $('#emailEmpresa').val(),
+				dataHoraEnvio: $('#dataHoraEnvio').val(),
+				dominio: $('#dominio').val(),
+				nomePaginaAvulsa: $('#nomePaginaAvulsa').val(),
+				urlPaginaAvulsa: $('#urlPaginaAvulsa').val(),
+				servidorAtualEmail: $('#servidorAtualEmail').val(),
+				outrosComentarios: $('#outrosComentarios').val(),
+				observacoes: '',
+				itensAssinalados: assinalados
+			}
+
+			$.post('{% url 'criarConsultoria' %}', dados)
+			.done(function(resposta) {
+				if (resposta.status == '1') {
+					swal({
+						type: 'success',
+						title: 'Cadastro realizado com sucesso!'
+					}).then((value) => {
+						swal({
+							html: resposta.texto
+						})
+					}).then((value) => {
+						limpaFormulario()
+					})
+				} else {
+					swal({
+						type: 'error',
+						title: 'Erro ao cadastrar os dados ou programar o e-mail',
+						text: 'Informe um administrador do sistema'
+					})
+				}
+			})
+			.fail(function() {
+				swal({
+					type: 'error',
+					title: 'Erro',
+					text: 'Recarregue a página e tente novamente.'
+				})
+			})
+
+		}
+
+		function uploadPrintSite() {
+			dados = new FormData()
+			dados.append('printSite', $('#printSite')[0].files[0])
+
+			$.ajax({
+				url: '{% url 'uploadPrintSite' %}',
+				data: dados,
+				processData: false,
+				contentType: false,
+				type: 'POST',
+				success: function(resposta) {
+					if(resposta.status == 200) {
+						swal({
+							type: 'success',
+							title: 'OK'
+						})
+					} else if(resposta.status == 500) {
+						swal({
+							type: 'error',
+							title: 'Erro',
+							text: 'Erro ao enviar o arquivo. Recarregue a página e tente novamente.'
+						})
+					}
+				}
+			})
+		}
+
+		function enviarSemSite() {
+			dados = {
+				opcao: 'semSite',
+				ramoAtividade: $('#ramoAtividade').val(),
+				nomeEmpresa: $('#nomeEmpresa').val(),
+				emailEmpresa: $('#emailEmpresa').val(),
+				dataHoraEnvio: $('#dataHoraEnvio').val(),
+				possivelDominio: $('#possivelDominio').val(),
+				meioComunicacao: $('#meioComunicacao').val(),
+				observacoes: ''
+			}
+
+			$.post('{% url 'criarConsultoria' %}', dados)
+			.done(function(resposta) {
+				console.log(resposta)
+				if (resposta.status == '1') {
+					swal({
+						type: 'success',
+						title: 'Cadastro realizado com sucesso!'
+					}).then((value) => {
+						swal({
+							html: resposta.texto
+						})
+					}).then((value) => {
+						limpaFormulario()
+					})
+				} else {
+					swal({
+						type: 'error',
+						title: 'Erro ao cadastrar os dados ou programar o e-mail',
+						text: 'Informe um administrador do sistema'
+					})
+				}
+			})
+			.fail(function() {
+				swal({
+					type: 'error',
+					title: 'Erro',
+					text: 'Recarregue a página e tente novamente.'
+				})
+			})
+		}
+
+		function enviarConsultoriaSEO() {
+			assinalados = new Array()
+
+			$('input:checked').each(function(indice, controle) {
+				assinalados.push(controle.id)
+			})
+
+			dados = {
+				opcao: 'consultoriaSEO',
+				ramoAtividade: $('#ramoAtividade').val(),
+				nomeEmpresa: $('#nomeEmpresa').val(),
+				emailEmpresa: $('#emailEmpresa').val(),
+				dataHoraEnvio: $('#dataHoraEnvio').val(),
+				qtdadeCurtidas: $('#qtdadeCurtidas').val(),
+				itensAssinalados: assinalados,
+				observacoes: ''
+			}
+
+			$.post('{% url 'criarConsultoria' %}', dados)
+			.done(function(resposta) {
+				console.log(resposta)
+				if (resposta.status == '1') {
+					swal({
+						type: 'success',
+						title: 'Cadastro realizado com sucesso!'
+					}).then((value) => {
+						swal({
+							html: resposta.texto
+						})
+					}).then((value) => {
+						limpaFormulario()
+					})
+				} else {
+					swal({
+						type: 'error',
+						title: 'Erro ao cadastrar os dados ou programar o e-mail',
+						text: 'Informe um administrador do sistema'
+					})
+				}
+			})
+			.fail(function() {
+				swal({
+					type: 'error',
+					title: 'Erro',
+					text: 'Recarregue a página e tente novamente.'
+				})
+			})
+		}
+
+
+	</script>
+{% endblock processamento %}

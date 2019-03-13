@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Adicionar Consultoria{% endblock titulo %}
+
+{% block breadcrumb %}
+	<ol class="breadcrumb">
+		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li class="active">Adicionar Consultoria</li>
+	</ol>
+{% endblock breadcrumb %}
+
+{% block controles %}
+	<div class="row">
+		<div class="col-md-12">
+			<div id="alertas"></div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+
+			<div class="row">
+				<div class="col-md-12">
+					<p class="negrito" id="consultoriasHoje">Consultorias hoje: {{consultoriasHoje}}</p>
+				</div>
+			</div>
+
+			<div class="panel panel-default">
+				<div class="panel-body">
+
+					<div class="row">
+						<div class="col-md-2">Ramo de Atividade:</div>
+						<div class="col-md-9">
+							<select id="ramoAtividade" class="form-control">
+								<option value="0" selected disabled>Selecione...</option>
+								{% for ramo in ramosAtividade %}
+								    <option value="{{ramo.id}}">{{ramo.nome}}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-md-1">
+							<a href="javascript:modalAdicionaRamoAtividade()" class="btn btn-primary btn-flat"><i class="fa fa-plus"></i></a>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">Empresa:</div>
+						<div class="col-md-10"><input type="text" class="form-control" id="empresa" placeholder="Empresa"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">Domínio:</div>
+						<div class="col-md-10"><input type="text" class="form-control" id="dominio" placeholder="Domínio"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">E-mail:</div>
+						<div class="col-md-10"><input type="text" class="form-control" id="email" placeholder="E-mail"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">Mensagem:</div>
+						<div class="col-md-10">
+							<textarea id="mensagem" class="form-control" placeholder="Mensagem" rows="5"></textarea>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2">Observações:</div>
+						<div class="col-md-10">
+							<textarea id="observacoes" class="form-control" placeholder="Observações" rows="5"></textarea>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-12 text-center">
+							<a href="javascript:cadastrarConsultoria()" class="btn btn-primary btn-flat btn-lg">Enviar</a>
+							<a href="javascript:limpaFormulario()" class="btn btn-default btn-flat btn-lg">Limpar</a>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Janela Modal -->
+	<div class="modal fade" id="janelaModal" tabindex="-1" role="dialog" aria-labelledby="tituloModal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="tituloModal"></h4>
+				</div>
+				<div class="modal-body" id="conteudoModal">
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Fim da janela modal -->
+{% endblock controles %}
+
+{% block processamento %}
+	<!-- Scripts de Processamento -->
+	<script type="text/javascript">
+		function limpaFormulario() {
+			$('input, textarea').each(function() {
+				$(this).val('')
+			})
+
+			$('select').each(function() {
+				$(this).val('0')
+			})
+		}
+
+		function validaFormulario() {
+			if (
+				$('#empresa').val() == '' ||
+				$('#mensagem').val() == ''
+			) {
+				return false
+			} else {
+				return true
+			}
+		}
+
+		function cadastrarConsultoria() {
+
+			if (validaFormulario()) {
+				dados = {
+					ramoAtividade: $('#ramoAtividade').val(),
+					empresa: $('#empresa').val(),
+					dominio: $('#dominio').val(),
+					email: $('#email').val(),
+					mensagem: $('#mensagem').val(),
+					observacoes: $('#observacoes').val()
+				}
+
+				$.post('{% url 'cadastrarConsultoria' %}', dados)
+				.done(function(resposta) {
+					if (resposta.status == 1) {
+						limpaFormulario()
+						$('#consultoriasHoje').html('Consultorias hoje: ' + resposta.consultoriasHoje)
+						$('#alertas').html('<div class="alert alert-success">Consultoria cadastrada com sucesso.</div>')
+					} else {
+						$('#alertas').html('<div class="alert alert-danger">Erro ao cadastrar a consultoria. Contato um administrador.</div>')
+					}
+				})
+				.fail(function() {
+					$('#alertas').html('<div class="alert alert-danger">Erro ao cadastrar a consultoria. Tente novamente.</div>')
+				})
+			} else {
+				$('#alertas').html('<div class="alert alert-warning">Preencha os campos corretamente.</div>')
+			}
+		}
+
+		function modalAdicionaRamoAtividade() {
+			$('#tituloModal').html('Ramo de Atividade - Adicionar')
+			$('#conteudoModal').html(`
+				<div class="row">
+					<div class="col-md-2">Nome:</div>
+					<div class="col-md-10">
+						<input type="text" class="form-control" id="nomeRamoAtividade" />
+					</div>
+				</div>
+
+				<div class="row" style="padding-top: 10px;">
+					<div class="col-md-12 text-center">
+						<a href="javascript:cadastraRamoAtividade()" class="btn btn-primary btn-flat">Enviar</a>
+					</div>
+				</div>
+			`)
+
+			$('#janelaModal').modal('show')
+		}
+
+		function cadastraRamoAtividade() {
+			dados = {
+				nome: $('#nomeRamoAtividade').val()
+			}
+
+			$('#janelaModal').modal('hide')
+			$.post('{% url 'cadastrarRamoAtividade' %}', dados)
+			.done(function(resposta) {
+				if (resposta.status == 0) {
+					$('#alertas').html('<div class="alert alert-danger">Ocorreu um erro ao cadastrar o ramo de atividade. Contate um administrador.</div>')
+				} else if (resposta.status == 1) {
+					$('#ramoAtividade').append($('<option>', {
+						value: resposta.ramo.id,
+						text: resposta.ramo.nome
+					}))
+
+					$('#ramoAtividade option[value='+resposta.ramo.id+']').attr('selected','selected')
+					$('#empresa').focus()
+				}
+			})
+			.fail(function() {
+				$('#alertas').html('<div class="alert alert-danger">Ocorreu um erro ao cadastrar o ramo de atividade. Tente novamente.</div>')
+			})
+		}
+	</script>
+	<!-- Fim dos scripts de processamento -->
+{% endblock processamento %}

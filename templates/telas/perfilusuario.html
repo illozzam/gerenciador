@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Perfil do Usuário{% endblock titulo %}
+
+{% block controles %}
+	<div class="row">
+		<div class="col-md-12" id="alertas"></div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box box-default">
+				<div class="box-header">
+					<div class="box-title">Dados Pessoais</div>
+				</div>
+
+				<div class="box-body">
+
+					<div class="row">
+						<div class="col-md-1">Nome:</div>
+						<div class="col-md-3"><input type="text" class="form-control" id="nome" disabled value="{{request.user.first_name}}"></div>
+
+						<div class="col-md-1">Sobrenome:</div>
+						<div class="col-md-3"><input type="text" class="form-control" id="sobrenome" disabled value="{{request.user.last_name}}"></div>
+
+						<div class="col-md-1">Facebook:</div>
+						<div class="col-md-3"><input type="text" class="form-control" id="facebook" value="{{request.user.usuario_set.first.facebook}}" placeholder="ID do Facebook"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-1">Cargo:</div>
+						<div class="col-md-3"><input type="text" class="form-control" id="cargo" disabled value="{{request.user.usuario_set.first.cargo}}"></div>
+
+						<div class="col-md-1">E-mail:</div>
+						<div class="col-md-3"><input type="email" class="form-control" value="{{request.user.email}}" id="email"></div>
+
+						<div class="col-md-1">Telefone:</div>
+						<div class="col-md-3"><input type="text" class="form-control" id="telefone" value="{{request.user.usuario_set.first.telefone}}" placeholder="Telefone"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-1">Senha:</div>
+						<div class="col-md-3"><input type="password" class="form-control" id="senha" placeholder="Senha"></div>
+
+						<div class="col-md-1">Novamente:</div>
+						<div class="col-md-3"><input type="password" class="form-control" id="senha2" placeholder="Repita Senha"></div>
+
+						<div class="col-md-3 col-md-offset-1">
+							<a href="javascript:enviar()" class="btn btn-primary btn-flat" style="width: 100%;">
+								<i class="fa fa-check">&nbsp;</i>Enviar
+							</a>
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+{% endblock controles %}
+
+{% block cabecalho %}{% endblock cabecalho %}
+
+{% block processamento %}
+	<script>
+		function validaFormulario() {
+			status = true
+			if ($('#email').val() == '') { status = false }
+			return status
+		}
+
+		function enviar() {
+			if (validaFormulario()) {
+				dados = {
+					facebook: $('#facebook').val(),
+					email: $('#email').val(),
+					telefone: $('#telefone').val(),
+					senha: $('#senha').val(),
+					senha2: $('#senha2').val()
+				}
+
+				$.post('{% url 'funcaoAtualizarUsuario' %}', dados)
+				.done(function(resposta) {
+					if (resposta.status == 200) {
+						swal({
+							type: 'success',
+							title: 'Dados atualizados com sucesso.'
+						})
+					} else {
+						swal(
+							'Erro',
+							`Código: ${resposta.status}`,
+							'error'
+						)
+					}
+				})
+				.fail(function() {
+					swal(
+						'Erro',
+						'Recarregue a página e tente novamente.',
+						'error'
+					)
+				})
+			} else {
+				swal(
+					'Dados Incorretos',
+					'Preencha os campos corretamente e tente de novo.',
+					'warning'
+				)
+			}
+		}
+	</script>
+{% endblock processamento %}

@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Buscar Cliente{% endblock titulo %}
+
+{% block breadcrumb %}
+	<ol class="breadcrumb">
+		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li class="active">Buscar Cliente</li>
+	</ol>
+{% endblock breadcrumb %}
+
+{% block controles %}
+	<div class="row">
+		<div class="col-md-12">
+			<div id="alertas"></div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-body">
+
+					<div class="row">
+						<div class="col-md-10">
+							<input type="text" class="form-control" id="termoBusca" placeholder="Pesquisa">
+						</div>
+						<div class="col-md-2">
+							<a href="javascript:pesquisaCliente()" class="btn btn-primary btn-flat btn-block">
+								<i class="fa fa-search">&nbsp;</i>Buscar
+							</a>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12">
+							<table class="table table-hover" id="tabelaClientes"></table>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="janelaModal" tabindex="-1" role="dialog" aria-labelledby="tituloModal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="tituloModal"></h4>
+				</div>
+				<div class="modal-body" id="conteudoModal">
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock controles %}
+
+{% block processamento %}
+	<script>
+		function pesquisaCliente() {
+			termo = $('#termoBusca').val()
+
+			if (termo != '') {
+				$.get('{% url 'buscarCliente' %}?cliente=' + termo, function(resposta) {
+					$('#tabelaClientes').html(`
+						<tr style="padding-top: 20px;">
+						<td style="font-weight: bold;">Cliente</td>
+						<td style="font-weight: bold;">Responsável</td>
+						<td style="font-weight: bold;">Telefone</td>
+						<td style="font-weight: bold;">E-mail</td>
+						<td></td> <!-- Controles -->
+						</tr>
+					`)
+
+					for (i=0; i<resposta.length; i++){
+						if (resposta[i].tipo == 'F') {
+							$('#tabelaClientes tr:last').after(`
+								<tr style="padding-top: 10px;">
+									<td>${resposta[i].nome} ${resposta[i].sobrenome}</td>
+									<td>Pessoa Física</td>
+									<td>${resposta[i].telefone}</td>
+									<td>${resposta[i].email}</td>
+									<td>
+										<a href="javascript:excluirCliente(${resposta[i].id})" class="btn btn-danger">
+											<i class="fa fa-trash"></i>
+										</a>
+
+										<a href="javascript:dadosCliente(${resposta[i].id})" class="btn btn-primary">
+											<i class="fa fa-info-circle"></i>
+										</a>
+									</td>
+								</tr>
+							`)
+						} else if (resposta[i].tipo == 'J') {
+							$('#tabelaClientes tr:last').after(`
+								<tr style="padding-top: 10px;">
+									<td>${resposta[i].razaoSocial}</td>
+									<td>${resposta[i].responsavel}</td>
+									<td>${resposta[i].telefone}</td>
+									<td>${resposta[i].email}</td>
+									<td>
+										<a href="javascript:excluirCliente(${resposta[i].id})" class="btn btn-danger">
+											<i class="fa fa-trash"></i>
+										</a>
+
+										<a href="javascript:dadosCliente(${resposta[i].id})" class="btn btn-primary">
+											<i class="fa fa-info-circle"></i>
+										</a>
+									</td>
+								</tr>
+							`)
+						}
+
+					}
+				})
+			}
+		}
+
+		function excluirCliente(idCliente) {
+			$.get('/cliente/excluir/' + idCliente.toString())
+			.done(function(resposta){
+				if (resposta.status == 1) {
+					$('#tabelaClientes').html('')
+					$('#alertas').html('<div class="alert alert-success">Cliente excluído.</div>')
+				} else {
+					$('#alertas').html('<div class="alert alert-danger">Ocorreu algum erro ao tentar excluir o cliente.</div>')
+				}
+			})
+			.fail(function(resposta){
+				$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o cliente. Verifique o log.</div>')
+				console.log(resposta.responseText)
+			})
+		}
+
+		function dadosCliente(idCliente) {
+			$.get('/cliente/dados/' + idCliente.toString())
+			.done(function(resposta){
+				console.log(resposta)
+				$('#tituloModal').html('Dados do Cliente')
+				$('#conteudoModal').html(`
+					<div class="box box-info">
+						<div class="box-header with-borders">
+							<div class="box-title">
+								${resposta.cliente[0].tipo == 'F' ? resposta.cliente[0].nome + ' ' + resposta.cliente[0].sobrenome : resposta.cliente[0].razaoSocial}
+							</div>
+						</div>
+						<div class="box-body">
+							<div class="row">
+								<div class="col-md-4">
+									${resposta.cliente[0].tipo == 'F' ? 'CPF: ' + resposta.cliente[0].cpf : 'CNPJ: ' + resposta.cliente[0].cnpj}
+								</div>
+								<div class="col-md-6">
+									${resposta.cliente[0].tipo == 'J' ? 'Responsável: ' + resposta.cliente[0].responsavel : ''}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="box box-info">
+						<div class="box-header with-borders">
+							<div class="box-title">Dados Gerais</div>
+						</div>
+						<div class="box-body">
+							<div class="row">
+								<div class="col-md-1">Tel.:</div>
+								<div class="col-md-3">
+									${resposta.cliente[0].telefone}
+								</div>
+								<div class="col-md-1">E-mail:</div>
+								<div class="col-md-7">${resposta.cliente[0].email}</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="box box-info">
+						<div class="box-header with-borders">
+							<div class="box-title">Endereço</div>
+						</div>
+						<div class="box-body">
+							<div class="row">
+								<div class="col-md-12">
+									${resposta.cliente[0].endereco}, ${resposta.cliente[0].numero} - ${resposta.cliente[0].complemento}
+								</div>
+							</div>
+
+							<div class="row" style="padding-top: 10px;">
+								<div class="col-md-1">Bairro:</div>
+								<div class="col-md-3">${resposta.cliente[0].bairro}</div>
+								<div class="col-md-1">CEP:</div>
+								<div class="col-md-3">${resposta.cliente[0].cep}</div>
+								<div class="col-md-1">Cidade:</div>
+								<div class="col-md-3">${resposta.cliente[0].cidade__nome} - ${resposta.cliente[0].cidade__estado__uf}</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="box box-info">
+						<div class="box-header with-borders">
+							<div class="box-title">Contratos</div>
+						</div>
+						<div class="box-body">
+							<table class="table table-hover" id="contratos">
+								<tr>
+									<th class="text-center">Cadastro</th>
+									<th class="text-center">Núm.</th>
+									<th class="text-center">Serviço</th>
+									<th class="text-center">Valor</th>
+									<th class="text-center">Parcelas</th>
+									<th class="text-center">Dia de Pag.</th>
+									<th class="text-center">Vigência</th>
+								</tr>
+							</table>
+						</div>
+					</div>
+				`)
+
+				//Preenche os dados de contratos do cliente
+				for (i=0; i<resposta.contratos.length; i++) {
+					console.log('Contrato ' + i.toString())
+					console.log(`${resposta.contratos[i].numero} - ${resposta.contratos[i].servico__nome}\n`)
+					$('#contratos tr:last').after(`
+						<tr>
+							<td class="text-center">${moment(resposta.contratos[i].dataHoraInclusao).format('DD/MM/YYYY')}</td>
+							<td class="text-center">${resposta.contratos[i].numero}</td>
+							<td class="text-center">${resposta.contratos[i].servico__nome}</td>
+							<td class="text-center">R$ ${parseFloat(resposta.contratos[i].valor).toFixed(2).toString().replace('.', ',')}</td>
+							<td class="text-center">${resposta.contratos[i].qtdadeParcelas}</td>
+							<td class="text-center">${resposta.contratos[i].diaPagamento}</td>
+							<td class="text-center">${resposta.contratos[i].vigencia != '0' ? resposta.contratos[i].vigencia + ' meses' : '-'}</td>
+						</tr>
+					`)
+				}
+
+				$('#janelaModal').modal('show')
+			})
+			.fail(function(resposta){
+				$('#alertas').html('<div class="alert alert-warning">Erro ao requisitar dados do servidor.</div>')
+			})
+		}
+	</script>
+{% endblock processamento %}

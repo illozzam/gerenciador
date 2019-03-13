@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block titulo %}Contas a Receber{% endblock titulo %}
+
+{% block breadcrumb %}
+	<ol class="breadcrumb">
+		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li class="active">Contas a Receber</li>
+	</ol>
+{% endblock breadcrumb %}
+
+{% block controles %}
+	<div class="row">
+		<div class="col-md-12" id="alertas"></div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-header with-border">
+					<div class="box-title">Cadastrar</div>
+				</div>
+				<div class="box-body">
+
+					<div class="row">
+						<div class="col-md-1">Data:</div>
+						<div class="col-md-2"><input type="text" class="form-control" id="data"></div>
+
+						<div class="col-md-1">Valor:</div>
+						<div class="col-md-2"><input type="text" class="form-control" id="valor"></div>
+
+						<div class="col-md-1">Descrição:</div>
+						<div class="col-md-3"><input type="text" class="form-control" id="descricao"></div>
+
+						<div class="col-md-2 text-center">
+							<a href="javascript:cadastraConta()" class="btn btn-flat btn-primary"><i class="fa fa-check">&nbsp;</i>Enviar</a>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-header with-border">
+					<div class="box-title">Consulta</div>
+				</div>
+
+				<div class="box-body">
+					<div id="calendario"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal fade" id="janelaModal" tabindex="-1" role="dialog" aria-labelledby="tituloModal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="tituloModal"></h4>
+				</div>
+				<div class="modal-body" id="conteudoModal">
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock controles %}
+
+{% block cabecalho %}
+	<link rel="stylesheet" href="{% static 'bibliotecas/fullcalendar/dist/fullcalendar.min.css' %}">
+	<link rel="stylesheet" href="{% static 'bibliotecas/fullcalendar/dist/fullcalendar.print.min.css' %}" media="print">
+	<link rel="stylesheet" href="{% static 'bibliotecas/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
+{% endblock cabecalho %}
+
+{% block processamento %}
+	<script src="{% static 'bibliotecas/fullcalendar/dist/fullcalendar.min.js' %}"></script>
+	<script src="{% static 'bibliotecas/fullcalendar/dist/locale/pt-br.js' %}"></script>
+
+	<script src="{% static 'bibliotecas/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script>
+	<script src="{% static 'bibliotecas/bootstrap-datepicker/dist/locales/bootstrap-datepicker.pt-BR.min.js' %}"></script>
+
+	<script>
+		function validaFormulario() {
+			if ($('#data').val() == '' || $('#valor').val() == '' || $('#descricao').val() == '') {
+				return false
+			} else {
+				return true
+			}
+		}
+
+		function limpaFormulario() {
+			$('#data').val('')
+			$('#valor').val('')
+			$('#descricao').val('')
+		}
+
+		function cadastraConta() {
+			if (validaFormulario()) {
+				dados = {
+					data: $('#data').val(),
+					valor: $('#valor').val(),
+					descricao: $('#descricao').val()
+				}
+
+				$.post('{% url 'cadastrarContasAReceber' %}', dados)
+				.done(function(resposta){
+					if (resposta.status == '1') {
+						$('#calendario').fullCalendar('renderEvent', {
+							id: resposta.conta.id,
+							valor: 'R$ ' + parseFloat(resposta.conta.valor).toFixed(2).toString().replace('.', ','),
+							descricao: resposta.conta.descricao,
+							title: resposta.conta.descricao + ' - R$ ' + parseFloat(resposta.conta.valor).toFixed(2).toString().replace('.',','),
+							start: moment(resposta.conta.data),
+							end: moment(resposta.conta.data),
+							allDay: true,
+							backgroundColor: '#a00',
+							borderColor: '#a00'
+						}, true)
+
+						limpaFormulario()
+					} else {
+						$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Informe um administrador do sistema</div>')
+					}
+				})
+				.fail(function() {
+					$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Tente novamente</div>')
+				})
+			} else {
+				$('#alertas').html('<div class="alert alert-warning">Preencha os campos corretamente e tente de novo.</div>')
+			}
+		}
+
+		function excluirConta(idConta) {
+			$('#janelaModal').modal('hide')
+			$.get('{% url 'excluirContasAReceber' %}?idConta=' + idConta)
+			.done(function(resposta) {
+				if (resposta.status == '1') {
+					$('#calendario').fullCalendar('removeEvents', idConta)
+				} else {
+					$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Informe um administrador do sistema.</div>')
+				}
+			})
+			.fail(function() {
+				$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Recarregue a página e tente novamente.</div>')
+			})
+		}
+
+		function reportarPagamento(idConta, isBoleto) {
+			swal.close()
+			dados = {
+				idConta: idConta,
+				boleto: isBoleto
+			}
+			$.post('{% url 'reportarRecebimento' %}', dados)
+			.done(function(resposta) {
+				if (resposta.status == '1') {
+					evento = $('#calendario').fullCalendar('clientEvents', idConta)[0]
+					evento.backgroundColor = '#0d0'
+					evento.borderColor = '#0d0'
+					$('#calendario').fullCalendar('rerenderEvents')
+				} else {
+					swal(
+						'Erro ao reportar o pagamento',
+						'Comunique um administrador do sistema',
+						'error'
+					)
+				}
+			})
+			.fail(function() {
+				swal(
+					'Erro ao reportar o pagamento',
+					'Recarregue a página e tente novamente.',
+					'error'
+				)
+			})
+		}
+
+		$(document).ready(function() {
+			$('#data').datepicker({
+				language: 'pt-BR',
+				format: "yyyy-mm-dd"
+			})
+
+			$('#calendario').fullCalendar({
+				locale: 'pt-br',
+				header		: {
+					left	: 'prev,next today',
+					center: 'title',
+					right : 'month,agendaWeek,agendaDay'
+				},
+				buttonText: {
+					today: 'Hoje',
+					month: 'Mensal',
+					week : 'Semanal',
+					day	: 'Diário'
+				},
+				events: [
+					{% for conta in contas %}
+						{
+							id: {{conta.id}},
+							valor: 'R$ {{conta.valor}}',
+							descricao: '{{conta.descricao}}',
+							title: '{{conta.descricao}} - R$ {{conta.valor}}',
+							start: moment('{{conta.data.isoformat}}'),
+							end: moment('{{conta.data.isoformat}}'),
+							allDay: true,
+							{% if conta.recebido %}
+								backgroundColor: '#0d0',
+								borderColor: '#0d0'
+							{% else %}
+								backgroundColor: '#a00',
+								borderColor: '#a00'
+							{% endif %}
+						}{% if not forloop.last %},{% endif %}
+					{% endfor %}
+				],
+				// events		: [
+				// 	{
+				// 		title					: 'Luz',
+				// 		start					: moment('2017-07-26'),
+				// 		end						: moment('2017-07-26'),
+				// 		allDay				 : true,
+				// 		backgroundColor: '#a00', //Success (green)
+				// 		borderColor		: '#a00' //Success (green)
+				// 	}
+				// ],
+				editable	: true,
+				droppable : true, // this allows things to be dropped onto the calendar !!!
+
+				eventClick: function(conta, jsEvent, view) {
+					swal({
+						title: `Dados da Conta ${conta.id}`,
+						html: `
+							<div class="row text-left"><div class="col-md-12">Data: ${moment(conta.start).format('DD/MM/YYYY')}</div></div>
+							<div class="row text-left">
+								<div class="col-md-12">
+									Descrição: ${conta.descricao}
+								</div>
+							</div>
+							<div class="row text-left"><div class="col-md-12">Valor: ${conta.valor}</div></div>
+
+							<div class="row" style="padding-top: 30px;">
+								<div class="col-md-6 col-md-offset-6 text-center">Reportar Pagamento:</div>
+							</div>
+
+							<div class="row" style="padding-top: 10px;">
+								<div class="col-md-6 text-center">
+									<a href="javascript:excluirConta(${conta.id})" class="btn btn-danger btn-block btn-flat">
+										<i class="fa fa-trash-o">&nbsp;</i>Excluir Conta
+									</a>
+								</div>
+								<div class="col-md-3 text-center">
+									<a href="javascript:reportarPagamento(${conta.id}, true)" class="btn btn-primary btn-block btn-flat">
+										<i class="fa fa-barcode">&nbsp;</i>Boleto
+									</a>
+								</div>
+								<div class="col-md-3 text-center">
+									<a href="javascript:reportarPagamento(${conta.id}, false)" class="btn btn-primary btn-flat btn-block">
+										<i class="fa fa-money">&nbsp;</i>Dinheiro
+									</a>
+								</div>
+							</div>
+						`,
+						showConfirmButton: false,
+						showCloseButton: true
+					})
+			    },
+
+				eventDrop: function(event, delta, revert) {
+					dados = {
+						id: event.id,
+						data: moment(event.start).format('YYYY-MM-DD')
+					}
+					$.post('{% url 'editarContasAReceber' %}', dados)
+					.done(function(resposta) {
+						if (resposta.status != '1') {
+							swal(
+								'Erro ao modificar o registro',
+								'Comunique um administrador do sistema',
+								'error'
+							)
+						}
+					})
+					.fail(function() {
+						swal(
+							'Erro ao modificar o registro',
+							'Recarregue a página e tente novamente.',
+							'error'
+						)
+					})
+				}
+			})
+		})
+	</script>
+{% endblock processamento %}

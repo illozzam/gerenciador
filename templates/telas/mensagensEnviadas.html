@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block titulo %}
+	Enviadas
+{% endblock titulo %}
+
+{% block breadcrumb %}
+	<ol class="breadcrumb">
+		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li class="active">Enviadas</li>
+	</ol>
+{% endblock breadcrumb %}
+
+{% block controles %}
+	<div class="row">
+		<div class="col-md-3">
+			<a href="{% url 'telaNovaMensagem' %}" class="btn btn-primary btn-flat btn-block margin-bottom">Nova Mensagem</a>
+			<div class="box box-solid">
+				<div class="box-header with-border">
+					<h3 class="box-title">Pastas</h3>
+					<div class="box-tools">
+						<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+						</button>
+					</div>
+				</div>
+				<div class="box-body no-padding">
+					<ul class="nav nav-pills nav-stacked">
+						<li><a href="{% url 'telaMensagensEntrada' %}"><i class="fa fa-inbox"></i> Caixa de Entrada</a></li>
+						<li class="active"><a href="{% url 'telaMensagensEnviadas' %}"><i class="fa fa-envelope-o"></i> Enviadas</a></li>
+					</ul>
+				</div>
+				<!-- /.box-body -->
+			</div>
+			<!-- /. box -->
+		</div>
+		<!-- /.col -->
+		<div class="col-md-9">
+			<div class="box box-primary">
+				<div class="box-header with-border">
+					<h3 class="box-title">Enviadas</h3>
+					<div class="box-tools pull-right" style="display: none;">
+						<div class="has-feedback">
+							<input type="text" class="form-control input-sm" placeholder="Buscar Mensagem">
+							<span class="glyphicon glyphicon-search form-control-feedback"></span>
+						</div>
+					</div>
+					<!-- /.box-tools -->
+				</div>
+				<!-- /.box-header -->
+				<div class="box-body no-padding">
+					{% if mensagens.count > 0 %}
+						<div class="mailbox-controls">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="pull-right">
+										1-{{mensagens.count}}
+										<div class="btn-group">
+											<button type="button" class="btn btn-default btn-sm"><i class="fa fa-chevron-left"></i></button>
+											<button type="button" class="btn btn-default btn-sm"><i class="fa fa-chevron-right"></i></button>
+										</div>
+										<!-- /.btn-group -->
+									</div>
+								</div>
+							</div>
+							<!-- /.pull-right -->
+						</div>
+					{% endif %}
+
+					<div class="table-responsive mailbox-messages">
+						<table class="table table-hover table-striped">
+							<tbody>
+								{% for mensagem in mensagens %}
+								    <tr>
+								    	<td><input type="checkbox"></td>
+										<td class="mailbox-name">
+											<a href="{% url 'telaMensagem' mensagem.id %}">{{mensagem.destinatario.usuario.get_full_name}}</a>
+										</td>
+										<td class="mailbox-subject">
+												{{mensagem.assunto}} - {{mensagem.texto|striptags|truncatewords:5}}
+										</td>
+										<td class="mailbox-attachment"></td>
+										<td class="mailbox-date text-right">{{mensagem.dataHoraEnvio|date:'SHORT_DATETIME_FORMAT'}}</td>
+								    </tr>
+								{% empty %}
+									<tr class="row">
+										<td class="col-md-12">Nenhuma mensagem encontrada.</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+						<!-- /.table -->
+					</div>
+					<!-- /.mail-box-messages -->
+				</div>
+				<!-- /.box-body -->
+			</div>
+			<!-- /. box -->
+		</div>
+		<!-- /.col -->
+	</div>
+	<!-- /.row -->
+{% endblock controles %}
+
+{% block processamento %}
+	<script>
+		$(function () {
+		  //Enable iCheck plugin for checkboxes
+		  //iCheck for checkbox and radio inputs
+		  $('.mailbox-messages input[type="checkbox"]').iCheck({
+		    checkboxClass: 'icheckbox_flat-blue',
+		    radioClass: 'iradio_flat-blue'
+		  });
+
+		  //Enable check and uncheck all functionality
+		  $(".checkbox-toggle").click(function () {
+		    var clicks = $(this).data('clicks');
+		    if (clicks) {
+		      //Uncheck all checkboxes
+		      $(".mailbox-messages input[type='checkbox']").iCheck("uncheck");
+		      $(".fa", this).removeClass("fa-check-square-o").addClass('fa-square-o');
+		    } else {
+		      //Check all checkboxes
+		      $(".mailbox-messages input[type='checkbox']").iCheck("check");
+		      $(".fa", this).removeClass("fa-square-o").addClass('fa-check-square-o');
+		    }
+		    $(this).data("clicks", !clicks);
+		  });
+
+		  //Handle starring for glyphicon and font awesome
+		  $(".mailbox-star").click(function (e) {
+		    e.preventDefault();
+		    //detect type
+		    var $this = $(this).find("a > i");
+		    var glyph = $this.hasClass("glyphicon");
+		    var fa = $this.hasClass("fa");
+
+		    //Switch states
+		    if (glyph) {
+		      $this.toggleClass("glyphicon-star");
+		      $this.toggleClass("glyphicon-star-empty");
+		    }
+
+		    if (fa) {
+		      $this.toggleClass("fa-star");
+		      $this.toggleClass("fa-star-o");
+		    }
+		  });
+		});
+	</script>
+{% endblock processamento %}
