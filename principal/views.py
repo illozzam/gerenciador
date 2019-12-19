@@ -917,35 +917,49 @@ class CadastrarTesourariaView(View):
 class PesquisarTesourariaView(View):
 	dados = {}
 	def get(self, request, **kwargs):
-		#try:
-		d1 = datetime.strptime(request.GET.get('dataInicial'), '%Y-%m-%d')
-		d2 = datetime.strptime(request.GET.get('dataFinal'), '%Y-%m-%d')
-		dataInicial = datetime(d1.year, d1.month, d1.day, 0, 0)
-		dataFinal = datetime(d2.year, d2.month, d2.day, 23, 59)
+		try:
+			d1 = datetime.strptime(request.GET.get('dataInicial'), '%Y-%m-%d')
+			d2 = datetime.strptime(request.GET.get('dataFinal'), '%Y-%m-%d')
+			dataInicial = datetime(d1.year, d1.month, d1.day, 0, 0)
+			dataFinal = datetime(d2.year, d2.month, d2.day, 23, 59)
 
-		self.dados['saldoAnterior'] = 0
-		for movimentacao in Tesouraria.objects.filter(dataHora__lte = dataInicial):
-			if movimentacao.tipo == 'E':
-				self.dados['saldoAnterior'] += float(movimentacao.valor)
-			else:
-				self.dados['saldoAnterior'] -= float(movimentacao.valor)
+			self.dados['saldoAnterior'] = 0
+			for movimentacao in Tesouraria.objects.filter(dataHora__lte = dataInicial):
+				if movimentacao.tipo == 'E':
+					self.dados['saldoAnterior'] += float(movimentacao.valor)
+				else:
+					self.dados['saldoAnterior'] -= float(movimentacao.valor)
 
-		self.dados['movimentacoes'] = list(
-			Tesouraria.objects.filter(
-				dataHora__gte = dataInicial,
-				dataHora__lte = dataFinal
-			).values(
-				'tipo',
-				'dataHora',
-				'valor',
-				'descricao'
+			self.dados['movimentacoes'] = list(
+				Tesouraria.objects.filter(
+					dataHora__gte = dataInicial,
+					dataHora__lte = dataFinal
+				).values(
+					'id',
+					'tipo',
+					'dataHora',
+					'valor',
+					'descricao'
+				)
 			)
-		)
-		self.dados['status'] = 1
-		#except:
-		#	self.dados['status'] = 0
+			self.dados['status'] = 1
+		except:
+			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+@method_decorator(login_required, name = 'dispatch')
+class ExcluirTesourariaView(View):
+	dados = {}
+	def get(self, request, **kwargs):
+		if Tesouraria.objects.filter(id = self.kwargs['tesouraria_id']).exists():
+			try:
+				Tesouraria.objects.get(id = self.kwargs['tesouraria_id']).delete()
+				self.dados['status'] = 1
+			except:
+				self.dados['status'] = 2
+		else:
+			self.dados['status'] = 0
+		return JsonResponse(self.dados, safe = False)
 
 #Consultorias
 @method_decorator([csrf_exempt, login_required], name = 'dispatch')

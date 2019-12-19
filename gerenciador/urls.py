@@ -84,6 +84,7 @@ urlpatterns = [
 	url(r'^financeiro/contasareceber/reportarRecebimento/$', ReportarRecebimentoView.as_view(), name='reportarRecebimento'),
 	url(r'^financeiro/tesouraria/cadastrar/$', CadastrarTesourariaView.as_view(), name='cadastrarTesouraria'),
 	url(r'^financeiro/tesouraria/pesquisar/$', PesquisarTesourariaView.as_view(), name='pesquisarTesouraria'),
+	url(r'^financeiro/tesouraria/excluir/(?P<tesouraria_id>[0-9]+)/$', ExcluirTesourariaView.as_view(), name='excluirTesouraria'),
 
 	#Consultorias
 	url(r'^consultoria/cadastrarRamoAtividade/$', CadastrarRamoAtividadeView.as_view(), name = 'cadastrarRamoAtividade'),

@@ -251,7 +251,7 @@ class Tesouraria(models.Model):
 	]
 
 	tipo = models.CharField(max_length = 1, choices = tiposTesouraria)
-	dataHora = models.DateTimeField(default = timezone.now(), verbose_name = 'Data e Hora')
+	dataHora = models.DateTimeField(default = timezone.now, verbose_name = 'Data e Hora')
 	valor = models.DecimalField(max_digits = 10, decimal_places = 2)
 	descricao = models.CharField(max_length = 50, verbose_name = 'descrição')
 
