@@ -52,8 +52,8 @@
 					<div class="row" style="padding-top: 5px;">
 						<div class="col-md-2">E-mail:</div>
 						<div class="col-md-4"><input type="email" class="form-control input-sm" id="emailEmpresa" onkeyup="preencheDominio()"></div>
-						<div class="col-md-2">Enviar em:</div>
-						<div class="col-md-4"><input type="text" class="form-control input-sm" id="dataHoraEnvio"></div>
+						<div class="col-md-2" style="display: none;">Enviar em:</div>
+						<div class="col-md-4" style="display: none;"><input type="text" class="form-control input-sm" id="dataHoraEnvio" value="01/01/1990 00:00"></div>
 					</div>
 
 				</div>
@@ -100,6 +100,7 @@
 					</div>
 				</div>
 
+<!--
 				<div class="row">
 					<div class="col-md-12">
 						<div class="box">
@@ -117,6 +118,8 @@
 						</div>
 					</div>
 				</div>
+
+-->
 
 				<div class="row">
 					<div class="col-md-12">
@@ -390,12 +393,14 @@
 						type: 'success',
 						title: 'Cadastro realizado com sucesso!'
 					}).then((value) => {
-						swal({
-							html: resposta.texto
-						})
-					}).then((value) => {
-						limpaFormulario()
+						window.location.href = `/telas/verConsultoria/${resposta.id}/`
 					})
+					// 	swal({
+					// 		html: resposta.texto
+					// 	})
+					// }).then((value) => {
+					// 	limpaFormulario()
+					// })
 				} else {
 					swal({
 						type: 'error',
@@ -461,12 +466,15 @@
 						type: 'success',
 						title: 'Cadastro realizado com sucesso!'
 					}).then((value) => {
-						swal({
-							html: resposta.texto
-						})
-					}).then((value) => {
-						limpaFormulario()
+						window.location.href = `/telas/verConsultoria/${resposta.id}/`
 					})
+
+						// swal({
+						// 	html: resposta.texto
+						// })
+					// }).then((value) => {
+					// 	limpaFormulario()
+					// })
 				} else {
 					swal({
 						type: 'error',
@@ -510,12 +518,14 @@
 						type: 'success',
 						title: 'Cadastro realizado com sucesso!'
 					}).then((value) => {
-						swal({
-							html: resposta.texto
-						})
-					}).then((value) => {
-						limpaFormulario()
+						window.location.href = `/telas/verConsultoria/${resposta.id}/`
 					})
+					// 	swal({
+					// 		html: resposta.texto
+					// 	})
+					// }).then((value) => {
+					// 	limpaFormulario()
+					// })
 				} else {
 					swal({
 						type: 'error',

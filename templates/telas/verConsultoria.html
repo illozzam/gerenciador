@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block controles %}
+	<div class="page-header">
+
+		<div class="row">
+			<!-- Page header, center on small screens -->
+			<h1 class="col-xs-12 col-sm-4 text-center text-left-sm"><i class="fa fa-users page-header-icon"></i>&nbsp;&nbsp;Consultoria: {{consultoria.id}}</h1>
+
+		</div>
+	</div> <!-- / .page-header -->
+
+	<div class="row">
+		<div class="col-md-12">
+			<div id="alertas"></div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-body">
+
+					<div class="row">
+						<div class="col-md-12"><b>Empresa:<b> {{consultoria.empresa}}</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12"><b>Gerado em:</b> {{consultoria.dataHoraInclusao}}</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12"><b>Domínio:</b> {{consultoria.dominio}}</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12"><b>E-mail:</b> {{consultoria.email}}</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12"><b>Mensagem:</b></div>
+					</div>
+
+					<div class="row" style="margin-top: 40px;">
+						<div class="col-md-12">
+							{{consultoria.mensagem|safe}}
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="janelaModal" tabindex="-1" role="dialog" aria-labelledby="tituloModal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="tituloModal"></h4>
+				</div>
+				<div class="modal-body" id="conteudoModal">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+	</script>
+{% endblock %}

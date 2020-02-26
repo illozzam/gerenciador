@@ -197,45 +197,53 @@
 						<li><a href="{% url 'telaTarefas' %}"><i class="fa fa-check"></i><span>Agenda de Tarefas</span></a></li>
 
 						<li class="header">VENDAS</li>
-						<li class="treeview">
-							<a href="#"><i class="fa fa-user"></i> <span>Clientes</span>
-								<span class="pull-right-container">
-									<i class="fa fa-angle-left pull-right"></i>
-								</span>
-							</a>
-							<ul class="treeview-menu">
-								<li><a href="{% url 'telaAdicionarCliente' %}">Adicionar...</a></li>
-								<li><a href="{% url 'telaBuscarCliente' %}">Buscar...</a></li>
-							</ul>
-						</li>
-						<li class="treeview">
-							<a href="#"><i class="fa fa-book"></i> <span>Contratos</span>
-								<span class="pull-right-container">
-									<i class="fa fa-angle-left pull-right"></i>
-								</span>
-							</a>
-							<ul class="treeview-menu">
-								<li><a href="{% url 'telaAdicionarContrato' %}">Adicionar...</a></li>
-								<li><a href="{% url 'telaBuscarContrato' %}">Buscar...</a></li>
-							</ul>
-						</li>
-						<li class="treeview">
-							<a href="#"><i class="fa fa-address-book-o"></i> <span>Consultorias</span>
-								<span class="pull-right-container">
-									<i class="fa fa-angle-left pull-right"></i>
-								</span>
-							</a>
-							<ul class="treeview-menu">
-								<li><a href="{% url 'telaCriarConsultoria' %}">Criar...</a></li>
-								<li><a href="{% url 'telaAdicionarConsultoria' %}">Adicionar...</a></li>
-								<li><a href="{% url 'telaBuscarConsultoria' %}">Buscar...</a></li>
-							</ul>
-						</li>
+						{% if perms.principal.add_cliente %}
+							<li class="treeview">
+								<a href="#"><i class="fa fa-user"></i> <span>Clientes</span>
+									<span class="pull-right-container">
+										<i class="fa fa-angle-left pull-right"></i>
+									</span>
+								</a>
+								<ul class="treeview-menu">
+									<li><a href="{% url 'telaAdicionarCliente' %}">Adicionar...</a></li>
+									<li><a href="{% url 'telaBuscarCliente' %}">Buscar...</a></li>
+								</ul>
+							</li>
+						{% endif %}
+						{% if perms.principal.add_contrato %}
+							<li class="treeview">
+								<a href="#"><i class="fa fa-book"></i> <span>Contratos</span>
+									<span class="pull-right-container">
+										<i class="fa fa-angle-left pull-right"></i>
+									</span>
+								</a>
+								<ul class="treeview-menu">
+									<li><a href="{% url 'telaAdicionarContrato' %}">Adicionar...</a></li>
+									<li><a href="{% url 'telaBuscarContrato' %}">Buscar...</a></li>
+								</ul>
+							</li>
+						{% endif %}
+						{% if perms.principal.add_consultoria %}
+							<li class="treeview">
+								<a href="#"><i class="fa fa-address-book-o"></i> <span>Consultorias</span>
+									<span class="pull-right-container">
+										<i class="fa fa-angle-left pull-right"></i>
+									</span>
+								</a>
+								<ul class="treeview-menu">
+									<li><a href="{% url 'telaCriarConsultoria' %}">Criar...</a></li>
+									<li><a href="{% url 'telaAdicionarConsultoria' %}">Adicionar...</a></li>
+									<li><a href="{% url 'telaBuscarConsultoria' %}">Buscar...</a></li>
+								</ul>
+							</li>
+						{% endif %}
 
-						<li class="header">FINANCEIRO</li>
-						<li><a href="{% url 'telaContasAReceber' %}"><i class="fa fa-reply"></i> <span>Contas a Receber</span></a></li>
-						<li><a href="{% url 'telaContasAPagar' %}"><i class="fa fa-share"></i> <span>Contas a Pagar</span></a></li>
-						<li><a href="{% url 'telaTesouraria' %}"><i class="fa fa-money"></i> <span>Tesouraria</span></a></li>
+						{% if perms.principal.add_tesouraria or perms.principal.add_contaapagar or perms.principal.add_contaareceber %}
+							<li class="header">FINANCEIRO</li>
+							<li><a href="{% url 'telaContasAReceber' %}"><i class="fa fa-reply"></i> <span>Contas a Receber</span></a></li>
+							<li><a href="{% url 'telaContasAPagar' %}"><i class="fa fa-share"></i> <span>Contas a Pagar</span></a></li>
+							<li><a href="{% url 'telaTesouraria' %}"><i class="fa fa-money"></i> <span>Tesouraria</span></a></li>
+						{% endif %}
 					</ul>
 
 					<!-- <ul class="sidebar-menu" data-widget="tree">

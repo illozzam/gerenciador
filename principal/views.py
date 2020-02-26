@@ -111,7 +111,7 @@ class TelaView(View):
 			self.dados['ramosAtividade'] = RamoConsultoria.objects.all()
 			self.dados['consultoriasHoje'] = Consultoria.objects.filter(
 				usuario = request.user.usuario_set.first(),
-				dataHoraEnvio__contains = timezone.now().date()
+				dataHoraInclusao__contains = timezone.now().date() #mudar para dataHoraEnvio no caso de ativar o envio automático
 			).count()
 			self.template_name = 'telas/adicionarConsultoria.html'
 
@@ -119,12 +119,17 @@ class TelaView(View):
 			self.dados['ramosAtividade'] = RamoConsultoria.objects.all()
 			self.dados['consultoriasHoje'] = Consultoria.objects.filter(
 				usuario = request.user.usuario_set.first(),
-				dataHoraEnvio__contains = timezone.now().date()
+				dataHoraInclusao__contains = timezone.now().date() #mudar para dataHoraEnvio no caso de ativar o envio automático
 			).count()
 			self.template_name = 'telas/criarConsultoria.html'
 
 		elif self.tela == 'telaBuscarConsultoria':
 			self.template_name = 'telas/buscarConsultorias.html'
+
+		elif self.tela == 'telaVerConsultoria':
+			if Consultoria.objects.filter(id = self.kwargs['idConsultoria']).exists():
+				self.dados['consultoria'] = Consultoria.objects.get(id = self.kwargs['idConsultoria'])
+				self.template_name = 'telas/verConsultoria.html'
 
 		#Mensagens
 		elif self.tela == 'telaMensagensEntrada':
@@ -1088,13 +1093,13 @@ class CriarConsultoriaView(View):
 		if request.POST.get('opcao') == 'comSite':
 			texto = '''
 				Olá!<br><br>
-				Meu nome é Julyanna e trabalho na área do Marketing Digital. Em poucas palavras, meu trabalho é garantir que a pessoa que acessa o seu site tenha uma experiência tão boa que, se ela não se tornar seu cliente, ficará com aquela sensação de que falta algo em sua vida! Hoje, estamos fazendo algumas consultorias gratuitas e o seu negócio foi contemplado.<br><br>
+				Meu nome é Nicole e trabalho na área do Marketing Digital. Em poucas palavras, meu trabalho é garantir que a pessoa que acessa o seu site tenha uma experiência tão boa que, se ela não se tornar seu cliente, ficará com aquela sensação de que falta algo em sua vida! Hoje, estamos fazendo algumas consultorias gratuitas e o seu negócio foi contemplado.<br><br>
 				[PRINT DO SITE]
 			'''.format(request.POST.get('printSite'))
 		elif request.POST.get('opcao') == 'consultoriaSEO':
 			texto = '''
 				Olá!<br><br>
-				Meu nome é Julyanna e conheci a empresa de vocês através do Facebook. Trabalho com Marketing Digital. Meu trabalho é planejar cuidadosamente a experiência do seu cliente com o contato da sua marca desde o momento em que ele está "buscando o que ou onde comprar" até realizar a compra efetivamente.<br><br>
+				Meu nome é Nicole e conheci a empresa de vocês através do Facebook. Trabalho com Marketing Digital. Meu trabalho é planejar cuidadosamente a experiência do seu cliente com o contato da sua marca desde o momento em que ele está "buscando o que ou onde comprar" até realizar a compra efetivamente.<br><br>
 				Levando em conta que, segundo o IBGE (dados de 2015), 80% das vendas de uma empresa iniciam com pesquisas na Internet, é fundamental que o seu cliente tenha a melhor experiência possível quando encontrar vocês. Esse primeiro encontro pode ocorrer através do Facebook e se sua página estiver de acordo com os princípios do Marketing Digital esse visitante pode se tornar seu cliente mais facilmente.<br><br>
 				Sendo assim, analisamos a página da sua empresa e vamos lhe dar algumas dicas de como melhor se posicionar nesta ferramenta.<br><br>
 				O Facebook, ao ser utilizado por empresas, tem a finalidade de estabelecer laços e contato com os clientes de maneira direta e frequente mas, para isso, é necessário que a página seja constantemente atualizada e mostrando ao seu cliente que você está disponível para ele. Seu cliente precisa ser lembrado que um dia Curtiu a sua página e de que você existe!
@@ -1227,7 +1232,7 @@ class CriarConsultoriaView(View):
 				%s
 				''' % request.POST.get('outrosComentarios').encode('utf-8')
 			texto += '''<br><br>
-			Minha empresa, a Mazzolli Sistemas (www.mazzollisistemas.com.br), pode ajudá-los em tudo isso e ainda contando com um módulo administrativo para que vocês mesmos possam gerenciar o conteúdo do site sem depender da empresa que o criou. E, claro, nossa consultoria não só hoje como em qualquer momento que precisarem, sem nenhum custo adicional.<br><br>
+			A empresa em que trabalho, a Mazzolli Sistemas (www.mazzollisistemas.com.br), pode ajudá-los em tudo isso e ainda contando com um módulo administrativo para que vocês mesmos possam gerenciar o conteúdo do site sem depender da empresa que o criou. E, claro, nossa consultoria não só hoje como em qualquer momento que precisarem, sem nenhum custo adicional.<br><br>
 			Fico no aguardo do seu retorno para conversarmos melhor sobre todas as possibilidades que existem para este negócio.<br><br>
 			Atenciosamente,
 			'''
@@ -1235,11 +1240,11 @@ class CriarConsultoriaView(View):
 			texto = '''
 			Olá,<br><br>
 			Conheci a empresa de vocês através do %s. Ao procurar informações sobre a empresa de vocês, algumas coisas ficaram vagas e esse é o motivo do meu e-mail.<br><br>
-			Meu nome é Julyanna e trabalho na área do Marketing Digital. Como forma de ajudá-los a serem melhor e mais vistos na Internet, estou fazendo essa consultoria com algumas dicas que, mesmo pequenas, costumam ter bons resultados.<br><br>
+			Meu nome é Nicole e trabalho na área do Marketing Digital. Como forma de ajudá-los a serem melhor e mais vistos na Internet, estou fazendo essa consultoria com algumas dicas que, mesmo pequenas, costumam ter bons resultados.<br><br>
 			A questão primordial do Marketing On-line é disponibilizar em um site, com endereço fácil de ser lembrado, as informações mais pertinentes do seu negócio como telefone, e-mail para contato, horário de atendimento ou endereço da empresa, além de, em breves áreas e palavras, fazer um novo visitante conhecer o trabalho de vocês e convencê-lo a fechar negócios.<br><br>
 			As redes sociais, hoje, são muito importantes para complementar o site. Elas trabalham com postagens rápidas que tem como objetivo direcionar os visitantes para o seu site e, assim, torná-los seus clientes. Sendo usadas dessa forma, essas ferramentas são muito mais eficazes na divulgação da sua empresa.<br><br>
 			Outro recurso muito importante para o Marketing da sua empresa é possuir endereços de e-mail personalizados como contato@%s. Isso passa maior credibilidade e profissionalismo em seus contatos.<br><br>
-			Minha empresa, a Mazzolli Sistemas, possui como foco as conversões das visitas em negócios e podemos ajudá-los tornando sua empresa mais vista e lembrada. Todos os nossos sites são completamente compatíveis com dispositivos móveis como celulares e tablets, possuem URLs amigáveis (os endereços são resumidos para que o usuário que acessar sua página possa fazê-lo de modo mais prático), um módulo administrativo onde você mesmo pode gerenciar o conteúdo das páginas e com até 9 contas de e-mails com o endereço personalizado que falei, sem cobrarmos nenhum adicional por isso.<br><br>
+			A empresa em que trabalho, a Mazzolli Sistemas, possui como foco as conversões das visitas em negócios e podemos ajudá-los tornando sua empresa mais vista e lembrada. Todos os nossos sites são completamente compatíveis com dispositivos móveis como celulares e tablets, possuem URLs amigáveis (os endereços são resumidos para que o usuário que acessar sua página possa fazê-lo de modo mais prático), um módulo administrativo onde você mesmo pode gerenciar o conteúdo das páginas e com até 9 contas de e-mails com o endereço personalizado que falei, sem cobrarmos nenhum adicional por isso.<br><br>
 			Fico no aguardo do seu retorno para conversarmos sobre todas as possibilidades que existem para explorar melhor o seu nicho de mercado e procurarmos trazer mais clientes para vocês.<br><br>
 			Atenciosamente,
 			''' % (request.POST.get('meioComunicacao').encode('utf-8'), request.POST.get('possivelDominio').encode('utf-8'))
@@ -1284,7 +1289,7 @@ class CriarConsultoriaView(View):
 			'''
 
 		#Assinatura
-		texto += '<br><br><a href="http://www.mazzollisistemas.com.br" target="_blank"><img src="http://mazzollisistemas.com.br/static/imagens/assinaturaJu.png" alt="Mazzolli Sistemas"></a>'
+		texto += '<br><br><a href="http://www.mazzollisistemas.com.br" target="_blank"><img src="http://mazzollisistemas.com.br/static/imagens/assinaturaNicole.png" alt="Mazzolli Sistemas"></a>'
 
 		#Cadastra o texto no banco de dados
 		dataHoraEnvio = datetime.strptime(
@@ -1294,7 +1299,7 @@ class CriarConsultoriaView(View):
 		zonaLocal = pytz.timezone('America/Sao_Paulo')
 		dataHoraEnvio = zonaLocal.localize(dataHoraEnvio)
 
-		Consultoria.objects.create(
+		consultoria = Consultoria.objects.create(
 			usuario = request.user.usuario_set.first(),
 			dataHoraEnvio = dataHoraEnvio,
 			enviado = True, #Desabilitando o envio de e-mails pelo servidor
@@ -1308,6 +1313,7 @@ class CriarConsultoriaView(View):
 
 		resposta = {
 			'status': '1',
+			'id': consultoria.id,
 			'texto': texto,
 		}
 		return JsonResponse(resposta)

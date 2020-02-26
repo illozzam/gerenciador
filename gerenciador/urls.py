@@ -32,6 +32,7 @@ urlpatterns = [
 	url(r'^telas/adicionarConsultoria/$', TelaView.as_view(tela = 'telaAdicionarConsultoria'), name='telaAdicionarConsultoria'),
 	url(r'^telas/criarConsultoria/$', TelaView.as_view(tela = 'telaCriarConsultoria'), name='telaCriarConsultoria'),
 	url(r'^telas/buscarConsultoria/$', TelaView.as_view(tela = 'telaBuscarConsultoria'), name='telaBuscarConsultoria'),
+	url(r'^telas/verConsultoria/(?P<idConsultoria>[0-9]+)/$', TelaView.as_view(tela = 'telaVerConsultoria'), name='telaVerConsultoria'),
 	url(r'^telas/mensagens/entrada/$', TelaView.as_view(tela = 'telaMensagensEntrada'), name='telaMensagensEntrada'),
 	url(r'^telas/mensagens/enviadas/$', TelaView.as_view(tela = 'telaMensagensEnviadas'), name='telaMensagensEnviadas'),
 	url(r'^telas/mensagens/nova/$', TelaView.as_view(tela = 'telaNovaMensagem'), name='telaNovaMensagem'),
