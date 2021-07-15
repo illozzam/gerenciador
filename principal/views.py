@@ -22,6 +22,7 @@ from django.core.mail import EmailMessage
 ########################################## CRONS ##############################################################
 from django_cron import CronJobBase, Schedule
 
+
 class EnviarEmails(CronJobBase):
 	tempo = 1 #Executar o código do() a cada 1 minuto
 	schedule = Schedule(run_every_mins = tempo)
@@ -50,12 +51,13 @@ class EnviarEmails(CronJobBase):
 			consultoria.save()
 ########################################## /CRONS #############################################################
 
+
 class LoginView(View):
 	dados = {}
 	template_name = 'login.html'
 
 	def get(self, request, **kwargs):
-		if request.user.is_authenticated():
+		if request.user.is_authenticated:
 			self.template_name = 'base.html'
 		return render(request, self.template_name, self.dados)
 
@@ -76,6 +78,7 @@ class LoginView(View):
 			self.dados['aviso'] = 'Usuário ou senha incorretos :('
 
 		return render(request, self.template_name, self.dados)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class TelaView(View):
@@ -182,6 +185,7 @@ class TelaView(View):
 
 		return render(request, self.template_name, self.dados)
 
+
 #Mensagens
 @method_decorator(login_required, name = 'dispatch')
 class VerificarMensagensView(View):
@@ -202,10 +206,12 @@ class VerificarMensagensView(View):
 		)
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class ApagarMensagemView(View):
 	def get(self, request, **kwargs):
 		pass
+
 
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
 class EnviarMensagemView(View):
@@ -223,6 +229,7 @@ class EnviarMensagemView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 #Agenda de Tarefas
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
@@ -284,6 +291,7 @@ class AdicionarTarefaView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class ExcluirTarefaView(View):
 	'''
@@ -321,6 +329,7 @@ class ExcluirTarefaView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class ConcluirTarefaView(View):
@@ -360,6 +369,7 @@ class ConcluirTarefaView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = True)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class AlterarPrioridadeTarefaView(View):
@@ -403,6 +413,7 @@ class AlterarPrioridadeTarefaView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class DadosTarefaView(View):
 	'''
@@ -430,6 +441,7 @@ class DadosTarefaView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 #Clientes
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
@@ -464,6 +476,7 @@ class CadastrarClienteView(View):
 			}
 		return JsonResponse(saida)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class ExcluirClienteView(View):
 	def get(self, request, **kwargs):
@@ -474,6 +487,7 @@ class ExcluirClienteView(View):
 		except:
 			saida['status'] = 0
 		return JsonResponse(saida)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class BuscarClienteView(View):
@@ -498,6 +512,7 @@ class BuscarClienteView(View):
 			)
 
 		return JsonResponse(resultado, safe = False)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class DadosClienteView(View):
@@ -544,6 +559,7 @@ class DadosClienteView(View):
 		)
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class ListarCidadesView(View):
 	def get(self, request, **kwargs):
@@ -557,6 +573,7 @@ class ListarCidadesView(View):
 			),
 			safe = False
 		)
+
 
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
 class AtualizarUsuarioView(View):
@@ -584,6 +601,7 @@ class AtualizarUsuarioView(View):
 			self.dados['status'] = 500
 		return JsonResponse(self.dados)
 
+
 #Contratos
 @method_decorator(login_required, name = 'dispatch')
 class ProximoNumeroContratoView(View):
@@ -602,6 +620,7 @@ class ProximoNumeroContratoView(View):
 		else:
 			self.dados['numero'] = '{}/{}'.format(str(timezone.now().year), '001')
 		return JsonResponse(self.dados, safe = False)
+
 
 @method_decorator([csrf_exempt, login_required], name = 'dispatch')
 class CadastrarContratoView(View):
@@ -632,6 +651,7 @@ class CadastrarContratoView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class BuscarContratoView(View):
@@ -707,6 +727,7 @@ class BuscarContratoView(View):
 				), safe = False
 			)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class DetalhesContratoView(View):
 	def get(self, request, **kwargs):
@@ -734,6 +755,7 @@ class DetalhesContratoView(View):
 				)
 			), safe = False
 		)
+
 
 #Financeiro
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
@@ -771,6 +793,7 @@ class CadastrarContasAPagarView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
 class EditarContasAPagarView(View):
 	'''
@@ -788,6 +811,7 @@ class EditarContasAPagarView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class ExcluirContasAPagarView(View):
 	dados = {}
@@ -799,6 +823,7 @@ class ExcluirContasAPagarView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class ReportarPagamentoView(View):
@@ -819,6 +844,7 @@ class ReportarPagamentoView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
 class CadastrarContasAReceberView(View):
@@ -842,6 +868,7 @@ class CadastrarContasAReceberView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
 class EditarContasAReceberView(View):
 	'''
@@ -859,6 +886,7 @@ class EditarContasAReceberView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class ExcluirContasAReceberView(View):
 	dados = {}
@@ -870,6 +898,7 @@ class ExcluirContasAReceberView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 @method_decorator([csrf_exempt, login_required], name = 'dispatch')
 class ReportarRecebimentoView(View):
@@ -902,6 +931,7 @@ class ReportarRecebimentoView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
 class CadastrarTesourariaView(View):
 	dados = {}
@@ -917,6 +947,7 @@ class CadastrarTesourariaView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class PesquisarTesourariaView(View):
@@ -952,6 +983,7 @@ class PesquisarTesourariaView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class ExcluirTesourariaView(View):
 	dados = {}
@@ -965,6 +997,7 @@ class ExcluirTesourariaView(View):
 		else:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
+
 
 #Consultorias
 @method_decorator([csrf_exempt, login_required], name = 'dispatch')
@@ -984,6 +1017,7 @@ class CadastrarRamoAtividadeView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados)
+
 
 @method_decorator([csrf_exempt, login_required], name = 'dispatch')
 class CadastrarConsultoriaView(View):
@@ -1013,6 +1047,7 @@ class CadastrarConsultoriaView(View):
 		except:
 			self.dados['status'] = 0
 		return JsonResponse(self.dados)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class BuscarConsultoriaView(View):
@@ -1066,6 +1101,7 @@ class BuscarConsultoriaView(View):
 			self.dados['status'] = 0
 		return JsonResponse(self.dados, safe = False)
 
+
 @method_decorator(login_required, name = 'dispatch')
 class DadosConsultoriaView(View):
 	dados = {}
@@ -1085,6 +1121,7 @@ class DadosConsultoriaView(View):
 			)
 		)
 		return JsonResponse(self.dados)
+
 
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
 class CriarConsultoriaView(View):
@@ -1318,6 +1355,7 @@ class CriarConsultoriaView(View):
 		}
 		return JsonResponse(resposta)
 
+
 @method_decorator([login_required, csrf_exempt], name = 'dispatch')
 class UploadPrintSiteView(View):
 	def post(self, request, **kwargs):
@@ -1332,6 +1370,7 @@ class UploadPrintSiteView(View):
 		except:
 			dados['status'] = 500
 		return JsonResponse(dados)
+
 
 @method_decorator(login_required, name = 'dispatch')
 class LogoutView(View):
