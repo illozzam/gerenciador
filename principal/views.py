@@ -61,6 +61,7 @@ class LoginView(View):
 		return render(request, template, {})
 
 	def post(self, request, **kwargs):
+		template = 'login.html'
 		entrada = authenticate(
 			username = request.POST.get('usuario'),
 			password = request.POST.get('senha')
@@ -71,7 +72,6 @@ class LoginView(View):
 				login(request, entrada)
 				template = 'base.html'
 			else:
-				template = 'login.html'
 				messages.error(request, 'Conta desabilitada :(')
 		else:
 			messages.error(request, 'Usuário ou senha incorretos. Tente novamente.')
