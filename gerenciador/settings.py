@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     'django_summernote',
     'principal',
+    'financeiro',
     #'django_cron',
 ]
 

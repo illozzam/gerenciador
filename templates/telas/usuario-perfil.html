@@ -79,7 +79,7 @@
 					senha2: $('#senha2').val()
 				}
 
-				$.post('{% url 'funcaoAtualizarUsuario' %}', dados)
+				$.post('{% url 'principal:usuario-atualizar' %}', dados)
 				.done(function(resposta) {
 					if (resposta.status == 200) {
 						swal({

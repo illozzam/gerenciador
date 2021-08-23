@@ -6,7 +6,7 @@
 
 {% block breadcrumb %}
 	<ol class="breadcrumb">
-		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li><a href="{% url 'principal:inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
 		<li class="active">Contas a Receber</li>
 	</ol>
 {% endblock breadcrumb %}
@@ -35,7 +35,7 @@
 						<div class="col-md-3"><input type="text" class="form-control" id="descricao"></div>
 
 						<div class="col-md-2 text-center">
-							<a href="javascript:cadastraConta()" class="btn btn-flat btn-primary"><i class="fa fa-check">&nbsp;</i>Enviar</a>
+							<a href="javascript:cadastrar_conta()" class="btn btn-flat btn-primary"><i class="fa fa-check">&nbsp;</i>Enviar</a>
 						</div>
 					</div>
 
@@ -87,7 +87,7 @@
 	<script src="{% static 'bibliotecas/bootstrap-datepicker/dist/locales/bootstrap-datepicker.pt-BR.min.js' %}"></script>
 
 	<script>
-		function validaFormulario() {
+		function valida_formulario() {
 			if ($('#data').val() == '' || $('#valor').val() == '' || $('#descricao').val() == '') {
 				return false
 			} else {
@@ -95,38 +95,44 @@
 			}
 		}
 
-		function limpaFormulario() {
+		function limpa_formulario() {
 			$('#data').val('')
 			$('#valor').val('')
 			$('#descricao').val('')
 		}
 
-		function cadastraConta() {
-			if (validaFormulario()) {
-				dados = {
+		function cadastrar_conta() {
+			if (valida_formulario()) {
+				dados_requisicao = {
 					data: $('#data').val(),
 					valor: $('#valor').val(),
 					descricao: $('#descricao').val()
 				}
 
-				$.post('{% url 'cadastrarContasAReceber' %}', dados)
+				$.ajax({
+					type: 'PUT',
+					url: '{% url 'financeiro:contas-a-receber' %}',
+					contentType: 'application/json',
+					data: dados_requisicao,
+				})
 				.done(function(resposta){
-					if (resposta.status == '1') {
+					if (resposta.status == 200) {
+						conta = JSON.parse(resposta.conta)
 						$('#calendario').fullCalendar('renderEvent', {
-							id: resposta.conta.id,
-							valor: 'R$ ' + parseFloat(resposta.conta.valor).toFixed(2).toString().replace('.', ','),
-							descricao: resposta.conta.descricao,
-							title: resposta.conta.descricao + ' - R$ ' + parseFloat(resposta.conta.valor).toFixed(2).toString().replace('.',','),
-							start: moment(resposta.conta.data),
-							end: moment(resposta.conta.data),
+							id: conta[0].pk,
+							valor: 'R$ ' + parseFloat(conta[0].fields.valor).toFixed(2).toString().replace('.', ','),
+							descricao: conta[0].fields.descricao,
+							title: conta[0].fields.descricao + ' - R$ ' + parseFloat(conta[0].fields.valor).toFixed(2).toString().replace('.',','),
+							start: moment(conta[0].fields.data),
+							end: moment(conta[0].fields.data),
 							allDay: true,
 							backgroundColor: '#a00',
 							borderColor: '#a00'
 						}, true)
 
-						limpaFormulario()
+						limpa_formulario()
 					} else {
-						$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Informe um administrador do sistema</div>')
+						$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Informe um administrador do sistema.</div>')
 					}
 				})
 				.fail(function() {
@@ -137,12 +143,22 @@
 			}
 		}
 
-		function excluirConta(idConta) {
-			$('#janelaModal').modal('hide')
-			$.get('{% url 'excluirContasAReceber' %}?idConta=' + idConta)
+		function excluir_conta(id_conta) {
+			swal.close()
+
+			$.ajax({
+				type: 'DELETE',
+				url: '{% url 'financeiro:contas-a-receber' %}',
+				contentType: 'application/json',
+				data: {
+					id_conta: id_conta
+				}
+			})
 			.done(function(resposta) {
-				if (resposta.status == '1') {
-					$('#calendario').fullCalendar('removeEvents', idConta)
+				if (resposta.status == 200) {
+					$('#calendario').fullCalendar('removeEvents', id_conta)
+				} else if (resposta.status == 404) {
+					location.reload()
 				} else {
 					$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Informe um administrador do sistema.</div>')
 				}
@@ -152,16 +168,16 @@
 			})
 		}
 
-		function reportarPagamento(idConta, isBoleto) {
+		function reportar_pagamento(id_conta) {
 			swal.close()
-			dados = {
-				idConta: idConta,
-				boleto: isBoleto
+			dados_requisicao = {
+				acao: 'reportar-recebimento',
+				id_conta: id_conta
 			}
-			$.post('{% url 'reportarRecebimento' %}', dados)
+			$.post('{% url 'financeiro:contas-a-receber' %}', dados_requisicao)
 			.done(function(resposta) {
-				if (resposta.status == '1') {
-					evento = $('#calendario').fullCalendar('clientEvents', idConta)[0]
+				if (resposta.status == 200) {
+					evento = $('#calendario').fullCalendar('clientEvents', id_conta)[0]
 					evento.backgroundColor = '#0d0'
 					evento.borderColor = '#0d0'
 					$('#calendario').fullCalendar('rerenderEvents')
@@ -247,22 +263,17 @@
 							<div class="row text-left"><div class="col-md-12">Valor: ${conta.valor}</div></div>
 
 							<div class="row" style="padding-top: 30px;">
-								<div class="col-md-6 col-md-offset-6 text-center">Reportar Pagamento:</div>
+								<div class="col-md-12 text-center">Reportar Pagamento:</div>
 							</div>
 
 							<div class="row" style="padding-top: 10px;">
 								<div class="col-md-6 text-center">
-									<a href="javascript:excluirConta(${conta.id})" class="btn btn-danger btn-block btn-flat">
+									<a href="javascript:excluir_conta(${conta.id})" class="btn btn-danger btn-block btn-flat">
 										<i class="fa fa-trash-o">&nbsp;</i>Excluir Conta
 									</a>
 								</div>
-								<div class="col-md-3 text-center">
-									<a href="javascript:reportarPagamento(${conta.id}, true)" class="btn btn-primary btn-block btn-flat">
-										<i class="fa fa-barcode">&nbsp;</i>Boleto
-									</a>
-								</div>
-								<div class="col-md-3 text-center">
-									<a href="javascript:reportarPagamento(${conta.id}, false)" class="btn btn-primary btn-flat btn-block">
+								<div class="col-md-6 text-center">
+									<a href="javascript:reportar_pagamento(${conta.id})" class="btn btn-primary btn-flat btn-block">
 										<i class="fa fa-money">&nbsp;</i>Dinheiro
 									</a>
 								</div>
@@ -274,13 +285,14 @@
 			    },
 
 				eventDrop: function(event, delta, revert) {
-					dados = {
-						id: event.id,
+					dados_requisicao = {
+						acao: 'alterar-data',
+						id_conta: event.id,
 						data: moment(event.start).format('YYYY-MM-DD')
 					}
-					$.post('{% url 'editarContasAReceber' %}', dados)
+					$.post('{% url 'financeiro:contas-a-receber' %}', dados_requisicao)
 					.done(function(resposta) {
-						if (resposta.status != '1') {
+						if (resposta.status != 200) {
 							swal(
 								'Erro ao modificar o registro',
 								'Comunique um administrador do sistema',

@@ -2,11 +2,11 @@
 
 {% load static %}
 
-{% block titulo %}Tesouraria{% endblock titulo %}
+{% block titulo %}Fluxo de Caixa{% endblock titulo %}
 
 {% block breadcrumb %}
 	<ol class="breadcrumb">
-		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li><a href="{% url 'principal:inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
 		<li class="active">Tesouraria</li>
 	</ol>
 {% endblock breadcrumb %}
@@ -22,32 +22,32 @@
 
 					<div class="row">
 						<div class="col-md-2">Código de Barras:</div>
-						<div class="col-md-10"><input type="text" class="form-control" id="codigoBarras" onblur="calculaCodigo()"></div>
+						<div class="col-md-10"><input type="text" class="form-control" id="codigo_barras" onblur="calcula_codigo()"></div>
 					</div>
 
 					<div class="row" style="padding-top: 10px;">
 						<div class="col-md-1 text-right">Tipo:</div>
-						<div class="col-md-5"><select id="cadastroTipo" class="form-control">
+						<div class="col-md-5"><select id="cadastro_tipo" class="form-control">
 								<option value="0" selected disabled>Selecione...</option>
 								<option value="E">Entrada</option>
 								<option value="S">Saída</option>
 							</select></div>
 
 						<div class="col-md-2 text-right">Data e Hora:</div>
-						<div class="col-md-4"><input type="text" class="form-control" id="cadastroDataHora"></div>
+						<div class="col-md-4"><input type="text" class="form-control" id="cadastro_data_hora"></div>
 					</div>
 
 					<div class="row" style="padding-top: 10px;">
 						<div class="col-md-1 text-right">Desc.:</div>
-						<div class="col-md-5"><input type="text" class="form-control" id="cadastroDescricao"></div>
+						<div class="col-md-5"><input type="text" class="form-control" id="cadastro_descricao"></div>
 
 						<div class="col-md-2 text-right">Valor:</div>
-						<div class="col-md-4"><input type="text" class="form-control" id="cadastroValor"></div>
+						<div class="col-md-4"><input type="text" class="form-control" id="cadastro_valor"></div>
 					</div>
 
 					<div class="row" style="padding-top: 10px;">
 						<div class="col-md-12 text-center">
-							<a href="javascript:cadastrarTesouraria()" class="btn btn-primary btn-flat btn-block">
+							<a href="javascript:cadastrar_fluxo_de_caixa()" class="btn btn-primary btn-flat btn-block">
 								<i class="fa fa-check">&nbsp;</i>Enviar
 							</a>
 						</div>
@@ -68,16 +68,16 @@
 						<div class="col-md-2 text-right">Período:</div>
 						<div class="col-md-10">
 						    <div class="input-daterange input-group" id="pesquisaData">
-						        <input type="text" class="input-sm form-control" id="pesquisaDataInicial" />
+						        <input type="text" class="input-sm form-control" id="pesquisa_data_inicial" />
 						        <span class="input-group-addon">até</span>
-						        <input type="text" class="input-sm form-control" id="pesquisaDataFinal" />
+						        <input type="text" class="input-sm form-control" id="pesquisa_data_final" />
 						    </div>
 						</div>
 					</div>
 
 					<div class="row" style="padding-top: 10px;">
 						<div class="col-md-12">
-							<a href="javascript:pesquisarTesouraria()" class="btn btn-primary btn-flat btn-block">
+							<a href="javascript:pesquisar_fluxo_de_caixa()" class="btn btn-primary btn-flat btn-block">
 								<i class="fa fa-check">&nbsp;</i>Enviar
 							</a>
 						</div>
@@ -94,7 +94,7 @@
 				<div class="box-header with-border">
 					<div class="box-title">Saldo Anterior</div>
 				</div>
-				<div class="box-body text-center" id="saldoAnterior"></div>
+				<div class="box-body text-center" id="saldo_anterior"></div>
 			</div>
 		</div>
 		<div class="col-md-6">
@@ -114,7 +114,7 @@
 					<div class="box-title">Entradas</div>
 				</div>
 				<div class="box-body table-responsive no-padding">
-					<table class="table table-hover" id="tabelaEntradas">
+					<table class="table table-hover" id="tabela_entradas">
 						<tbody>
 							<tr>
 								<th>Data e Hora</th>
@@ -134,7 +134,7 @@
 					<div class="box-title">Saídas</div>
 				</div>
 				<div class="box-body table-responsive no-padding">
-					<table class="table table-hover" id="tabelaSaidas">
+					<table class="table table-hover" id="tabela_saidas">
 						<tbody>
 							<tr>
 								<th>Data e Hora</th>
@@ -165,23 +165,23 @@
 
 	<script type="text/javascript">
 		function verificaFormulario() {
-			if ($('#cadastroTipo').val() != '0' && $('#cadastroDataHora').val() != '' && $('#cadastroDescricao').val() != '' && $('#cadastroValor').val() != '') {
+			if ($('#cadastro_tipo').val() != '0' && $('#cadastro_data_hora').val() != '' && $('#cadastro_descricao').val() != '' && $('#cadastro_valor').val() != '') {
 				return true
 			} else {
 				return false
 			}
 		}
 
-		function cadastrarTesouraria() {
+		function cadastrar_fluxo_de_caixa() {
 			if (verificaFormulario()) {
 				dados = {
-					tipo: $('#cadastroTipo').val(),
-					dataHora: $('#cadastroDataHora').val(),
-					descricao: $('#cadastroDescricao').val(),
-					valor: $('#cadastroValor').val()
+					tipo: $('#cadastro_tipo').val(),
+					dataHora: $('#cadastro_data_hora').val(),
+					descricao: $('#cadastro_descricao').val(),
+					valor: $('#cadastro_valor').val()
 				}
 
-				$.post('{% url 'cadastrarTesouraria' %}', dados)
+				$.post('{% url 'financeiro:fluxo-de-caixa' %}', dados)
 				.done(function(resposta) {
 					if (resposta.status == '1') {
 						swal({
@@ -213,7 +213,7 @@
 		}
 
 		function limpaDados() {
-			$('#tabelaEntradas').html(`
+			$('#tabela_entradas').html(`
 				<tbody>
 					<tr>
 						<th>Data e Hora</th>
@@ -223,7 +223,7 @@
 					</tr>
 				</tbody>
 			`)
-			$('#tabelaSaidas').html(`
+			$('#tabela_saidas').html(`
 				<tbody>
 					<tr>
 						<th>Data e Hora</th>
@@ -234,18 +234,18 @@
 				</tbody>
 			`)
 			$('#saldo').html('')
-			$('#saldoAnterior').html('')
+			$('#saldo_anterior').html('')
 		}
 
-		function pesquisarTesouraria() {
-			if ($('#pesquisaDataInicial').val() != '' && $('#pesquisaDataFinal').val() != ''){
-				$.get('{% url 'pesquisarTesouraria' %}' + `?dataInicial=${$('#pesquisaDataInicial').val()}&dataFinal=${$('#pesquisaDataFinal').val()}`)
+		function pesquisar_fluxo_de_caixa() {
+			if ($('#pesquisa_data_inicial').val() != '' && $('#pesquisa_data_final').val() != ''){
+				$.get('{% url 'financeiro:fluxo-de-caixa' %}' + `?dataInicial=${$('#pesquisa_data_inicial').val()}&dataFinal=${$('#pesquisa_data_final').val()}`)
 				.done(function(resposta) {
 					//Reiniciar as tabelas
 					var totalEntradas = 0
 					var totalSaidas = 0
-					var saldo = parseFloat(resposta.saldoAnterior)
-					var saldoAnterior = parseFloat(resposta.saldoAnterior)
+					var saldo = parseFloat(resposta.saldo_anterior)
+					var saldo_anterior = parseFloat(resposta.saldo_anterior)
 
 					limpaDados()
 
@@ -253,7 +253,7 @@
 						if (resposta.movimentacoes[i].tipo == 'E') {
 							totalEntradas += parseFloat(resposta.movimentacoes[i].valor)
 							saldo += parseFloat(resposta.movimentacoes[i].valor)
-							$('#tabelaEntradas tr:last').after(`
+							$('#tabela_entradas tr:last').after(`
 								<tr>
 									<td>${moment(resposta.movimentacoes[i].dataHora).format('DD/MM/YYYY HH:mm')}</td>
 									<td>${resposta.movimentacoes[i].descricao}</td>
@@ -264,7 +264,7 @@
 						} else if (resposta.movimentacoes[i].tipo == 'S') {
 							totalSaidas += parseFloat(resposta.movimentacoes[i].valor)
 							saldo -= parseFloat(resposta.movimentacoes[i].valor)
-							$('#tabelaSaidas tr:last').after(`
+							$('#tabela_saidas tr:last').after(`
 								<tr>
 									<td>${moment(resposta.movimentacoes[i].dataHora).format('DD/MM/YYYY HH:mm')}</td>
 									<td>${resposta.movimentacoes[i].descricao}</td>
@@ -278,14 +278,14 @@
 					}
 
 					//Linhas dos totais
-					$('#tabelaEntradas tr:last').after(`
+					$('#tabela_entradas tr:last').after(`
 						<tr style="font-weight: bold;">
 							<td colspan="2">TOTAL</td>
 							<td>R$ ${totalEntradas.toFixed(2).toString().replace('.',',')}</td>
 							<td></td>
 						</tr>
 					`)
-					$('#tabelaSaidas tr:last').after(`
+					$('#tabela_saidas tr:last').after(`
 						<tr style="font-weight: bold;">
 							<td colspan="2">TOTAL</td>
 							<td>R$ ${totalSaidas.toFixed(2).toString().replace('.',',')}</td>
@@ -294,7 +294,7 @@
 					`)
 
 					//Caixa de Saldo
-					$('#saldoAnterior').html(`<h3>R$ ${saldoAnterior.toFixed(2).toString().replace('.', ',')}</h3>`)
+					$('#saldo_anterior').html(`<h3>R$ ${saldo_anterior.toFixed(2).toString().replace('.', ',')}</h3>`)
 					$('#saldo').html(`<h3>R$ ${saldo.toFixed(2).toString().replace('.', ',')}</h3>`)
 				})
 				.fail(function() {
@@ -329,7 +329,7 @@
 					.done(function(resposta) {
 						if (resposta.status == 1) {
 							swal({text: 'Movimentação excluída.', type: 'success'})
-							.then(() => {pesquisarTesouraria()})
+							.then(() => {pesquisar_fluxo_de_caixa()})
 						} else {
 							swal({text: 'Erro ao excluir a movimentação', type: 'error'})
 						}
@@ -338,15 +338,15 @@
 			})
 		}
 
-		function calculaCodigo() {
-			if ($('#codigoBarras').val().length == 54) {
-				var codigoBarras = $('#codigoBarras').val().replace(' ', '').replace('.', '')
-				codigo = calcula_barra(codigoBarras)
+		function calcula_codigo() {
+			if ($('#codigo_barras').val().length == 54) {
+				var codigo_barras = $('#codigo_barras').val().replace(' ', '').replace('.', '')
+				codigo = calcula_barra(codigo_barras)
 				var vencimento = fator_vencimento(codigo.substr(5, 4))
-				$('#cadastroTipo').val('S')
-				//$('#cadastroDataHora').val(moment(new Date).format('DD/MM/YYYY HH:mm'))
-				$('#cadastroValor').val(codigo.substr(9, 8)*1 + ',' + codigo.substr(17, 2))
-				$('#cadastroDataHora').focus()
+				$('#cadastro_tipo').val('S')
+				//$('#cadastro_data_hora').val(moment(new Date).format('DD/MM/YYYY HH:mm'))
+				$('#cadastro_valor').val(codigo.substr(9, 8)*1 + ',' + codigo.substr(17, 2))
+				$('#cadastro_data_hora').focus()
 			}
 		}
 
@@ -358,7 +358,7 @@
 				todayHighlight: true
 			});
 
-			$('#cadastroDataHora').datetimepicker({
+			$('#cadastro_data_hora').datetimepicker({
 				locale: 'pt-BR'
 			});
 		})

@@ -6,7 +6,7 @@
 
 {% block breadcrumb %}
 	<ol class="breadcrumb">
-		<li><a href="{% url 'inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li><a href="{% url 'principal:inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
 		<li class="active">Contas a Pagar</li>
 	</ol>
 {% endblock breadcrumb %}
@@ -39,11 +39,11 @@
 
 							<div class="row" style="padding-top: 10px;">
 								<div class="col-md-2">Código de Barras:</div>
-								<div class="col-md-10"><input type="text" class="form-control" id="codigoBarras" onblur="calculaCodigo()"></div>
+								<div class="col-md-10"><input type="text" class="form-control" id="codigo_barras" onblur="calcula_codigo()"></div>
 							</div>
 						</div>
 						<div class="col-md-2 text-center">
-							<a href="javascript:cadastraConta()" class="btn btn-flat btn-block btn-primary" style="height: 78px; padding-top: 23px; font-size: 20px;">
+							<a href="javascript:cadastrar_conta()" class="btn btn-flat btn-block btn-primary" style="height: 78px; padding-top: 23px; font-size: 20px;">
 								<i class="fa fa-check">&nbsp;</i>Enviar
 							</a>
 						</div>
@@ -101,7 +101,7 @@
 	<script src="{% static 'bibliotecas/qrcode-js/qrcode.min.js' %}"></script>
 
 	<script>
-		function validaFormulario() {
+		function valida_formulario() {
 			if ($('#data').val() == '' || $('#valor').val() == '' || $('#descricao').val() == '') {
 				return false
 			} else {
@@ -109,40 +109,45 @@
 			}
 		}
 
-		function limpaFormulario() {
+		function limpa_formulario() {
 			$('#data').val('')
 			$('#valor').val('')
 			$('#descricao').val('')
-			$('#codigoBarras').val('')
+			$('#codigo_barras').val('')
 		}
 
-		function cadastraConta() {
-			if (validaFormulario()) {
+		function cadastrar_conta() {
+			if (valida_formulario()) {
 				dados = {
 					data: $('#data').val(),
 					valor: $('#valor').val(),
 					descricao: $('#descricao').val(),
-					codigoBarras: $('#codigoBarras').val()
+					codigo_barras: $('#codigo_barras').val()
 				}
 
-				$.post('{% url 'cadastrarContasAPagar' %}', dados)
+				$.ajax({
+					url: '{% url 'financeiro:contas-a-pagar' %}',
+					type: 'PUT',
+					data: dados,
+				})
 				.done(function(resposta){
-					if (resposta.status == '1') {
+					if (resposta.status == 200) {
+						conta = JSON.parse(resposta.conta)
 						$('#calendario').fullCalendar('renderEvent', {
-							id: resposta.conta.id,
-							valor: 'R$ ' + parseFloat(resposta.conta.valor).toFixed(2).toString().replace('.', ','),
-							descricao: resposta.conta.descricao,
-							codigoBarras: resposta.conta.codigoBarras,
+							id: conta[0].pk,
+							valor: 'R$ ' + parseFloat(conta[0].fields.valor).toFixed(2).toString().replace('.', ','),
+							descricao: conta[0].fields.descricao,
+							codigo_barras: conta[0].fields.codigo_barras,
 
-							title: resposta.conta.descricao + ' - R$ ' + parseFloat(resposta.conta.valor).toFixed(2).toString().replace('.',','),
-							start: moment(resposta.conta.data),
-							end: moment(resposta.conta.data),
+							title: conta[0].fields.descricao + ' - R$ ' + parseFloat(conta[0].fields.valor).toFixed(2).toString().replace('.',','),
+							start: moment(conta[0].fields.data),
+							end: moment(conta[0].fields.data),
 							allDay: true,
 							backgroundColor: '#a00',
 							borderColor: '#a00'
 						}, true)
 
-						limpaFormulario()
+						limpa_formulario()
 					} else {
 						$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Informe um administrador do sistema</div>')
 					}
@@ -155,12 +160,17 @@
 			}
 		}
 
-		function excluirConta(idConta) {
+		function excluir_conta(id_conta) {
 			$('#janelaModal').modal('hide')
-			$.get('{% url 'excluirContasAPagar' %}?idConta=' + idConta)
+			$.ajax({
+				type: 'DELETE',
+				url: '{% url 'financeiro:contas-a-pagar' %}?id_conta=' + id_conta
+			})
 			.done(function(resposta) {
-				if (resposta.status == '1') {
-					$('#calendario').fullCalendar('removeEvents', idConta)
+				if (resposta.status == 200) {
+					$('#calendario').fullCalendar('removeEvents', id_conta)
+				} else if (resposta.status == 404) {
+					location.reload()
 				} else {
 					$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Informe um administrador do sistema.</div>')
 				}
@@ -170,28 +180,32 @@
 			})
 		}
 
-		function reportarPagamento(idConta) {
+		function reportar_pagamento(id_conta) {
 			$('#janelaModal').modal('hide')
-			$.get('{% url 'reportarPagamento' %}?idConta=' + idConta)
+			dados_requisicao = {
+				acao: 'reportar-pagamento',
+				id_conta: id_conta,
+			}
+			$.post('{% url 'financeiro:contas-a-pagar' %}', dados_requisicao)
 			.done(function(resposta) {
-				if (resposta.status == '1') {
-					evento = $('#calendario').fullCalendar('clientEvents', idConta)[0]
+				if (resposta.status == 200) {
+					evento = $('#calendario').fullCalendar('clientEvents', id_conta)[0]
 					evento.backgroundColor = '#0d0'
 					evento.borderColor = '#0d0'
 					$('#calendario').fullCalendar('rerenderEvents')
 				} else {
-					$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Informe um administrador do sistema.</div>')
+					$('#alertas').html('<div class="alert alert-danger">Erro ao reportar o pagamento. Informe um administrador do sistema.</div>')
 				}
 			})
 			.fail(function() {
-				$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Recarregue a página e tente novamente.</div>')
+				$('#alertas').html('<div class="alert alert-danger">Erro ao reportar o pagamento. Recarregue a página e tente novamente.</div>')
 			})
 		}
 
-		function calculaCodigo() {
-			if ($('#codigoBarras').val().length == 54) {
-				var codigoBarras = $('#codigoBarras').val().replace(' ', '').replace('.', '')
-				codigo = calcula_barra(codigoBarras)
+		function calcula_codigo() {
+			if ($('#codigo_barras').val().length == 54) {
+				var codigo_barras = $('#codigo_barras').val().replace(' ', '').replace('.', '')
+				codigo = calcula_barra(codigo_barras)
 				var vencimento = fator_vencimento(codigo.substr(5, 4))
 				$('#valor').val(codigo.substr(9, 8)*1 + ',' + codigo.substr(17, 2))
 				$('#data').val(moment(vencimento, 'DD-MM-YYYY HH:mm').format('YYYY-MM-DD'))
@@ -224,7 +238,7 @@
 							id: {{conta.id}},
 							valor: 'R$ {{conta.valor}}',
 							descricao: '{{conta.descricao}}',
-							codigoBarras: '{{conta.codigoBarras}}'.replace(/ /g, ''),
+							codigo_barras: '{{conta.codigo_barras}}'.replace(/ /g, ''),
 
 							title: '{{conta.descricao}} - R$ {{conta.valor}}',
 							start: moment('{{conta.data.isoformat}}'),
@@ -268,41 +282,42 @@
 						</div>
 
 						<div class="row" style="padding-top:10px;">
-							<div class="col-md-12">Código de Barras: ${conta.codigoBarras}</div>
+							<div class="col-md-12">Código de Barras: ${conta.codigo_barras}</div>
 						</div>
 
 						<div class="row" style="padding-top: 10px;">
-							<div class="col-md-12" style="width: 200px; height: 200px;" id="qrCode"></div>
+							<div class="col-md-12" style="width: 200px; height: 200px;" id="qr_code"></div>
 						</div>
 
 						<div class="row" style="padding-top: 30px;">
 							<div class="col-md-6 text-center">
-								<a href="javascript:excluirConta(${conta.id})" class="btn btn-danger btn-block btn-flat">
+								<a href="javascript:excluir_conta(${conta.id})" class="btn btn-danger btn-block btn-flat">
 									<i class="fa fa-trash-o">&nbsp;</i>Excluir Conta
 								</a>
 							</div>
 							<div class="col-md-6 text-center">
-								<a href="javascript:reportarPagamento(${conta.id})" class="btn btn-primary btn-flat btn-block">
+								<a href="javascript:reportar_pagamento(${conta.id})" class="btn btn-primary btn-flat btn-block">
 									<i class="fa fa-money">&nbsp;</i>Reportar Pagamento
 								</a>
 							</div>
 						</div>
 					`)
 					$('#janelaModal').modal('show')
-					if (conta.codigoBarras != '') {
-						var qrCode = new QRCode(document.getElementById('qrCode'), {width: 200, height: 200})
-						qrCode.makeCode(conta.codigoBarras)
+					if (conta.codigo_barras != '') {
+						var qrCode = new QRCode(document.getElementById('qr_code'), {width: 200, height: 200})
+						qrCode.makeCode(conta.codigo_barras)
 					}
 			    },
 
 				eventDrop: function(event, delta, revert) {
-					dados = {
-						id: event.id,
+					dados_requisicao = {
+						acao: 'alterar-data',
+						id_conta: event.id,
 						data: moment(event.start).format('YYYY-MM-DD')
 					}
-					$.post('{% url 'editarContasAPagar' %}', dados)
+					$.post('{% url 'financeiro:contas-a-pagar' %}', dados_requisicao)
 					.done(function(resposta) {
-						if (resposta.status != '1') {
+						if (resposta.status != 200) {
 							$('#alertas').html('<div class="alert alert-danger">Ocorreu um erro ao modificar o registro. Informe um administrador do sistema</div>')
 						}
 					})
