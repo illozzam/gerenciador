@@ -148,63 +148,58 @@ class ContasAReceberView(LoginRequiredMixin, View):
         return JsonResponse(resposta)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class FluxoDeCaixaView(LoginRequiredMixin, View):
     def get(self, request, **kwargs):
-        #Tela
-        template = 'financeiro/fluxo_de_caixa.html'
-        return render(request, template, {})
+        if not 'data_inicial' in request.GET.keys() or not 'data_final' in request.GET.keys():
+            template = 'financeiro/fluxo_de_caixa.html'
+            return render(request, template, {})
+        else:
+            contexto = {}
+            try:
+                contexto['saldo_anterior'] = 0
 
-        #Pesquisar fluxo de caixa
-        try:
-            d1 = datetime.strptime(request.GET.get('dataInicial'), '%Y-%m-%d')
-            d2 = datetime.strptime(request.GET.get('dataFinal'), '%Y-%m-%d')
-            dataInicial = datetime(d1.year, d1.month, d1.day, 0, 0)
-            dataFinal = datetime(d2.year, d2.month, d2.day, 23, 59)
+                data_inicial = datetime.strptime(request.GET.get('data_inicial'), '%Y-%m-%d').replace(hour=0, minute=0, second=0)
+                data_final = datetime.strptime(request.GET.get('data_final'), '%Y-%m-%d').replace(hour=23, minute=59, second=59)
 
-            self.dados['saldoAnterior'] = 0
-            for movimentacao in Tesouraria.objects.filter(dataHora__lte = dataInicial):
-                if movimentacao.tipo == 'E':
-                    self.dados['saldoAnterior'] += float(movimentacao.valor)
-                else:
-                    self.dados['saldoAnterior'] -= float(movimentacao.valor)
+                for movimentacao in FluxoDeCaixa.objects.filter(data_hora__lte=data_inicial):
+                    if movimentacao.tipo == 'E':
+                        contexto['saldo_anterior'] += float(movimentacao.valor)
+                    else:
+                        contexto['saldo_anterior'] -= float(movimentacao.valor)
 
-            self.dados['movimentacoes'] = list(
-                Tesouraria.objects.filter(
-                    dataHora__gte = dataInicial,
-                    dataHora__lte = dataFinal
-                ).values(
-                    'id',
-                    'tipo',
-                    'dataHora',
-                    'valor',
-                    'descricao'
-                )
-            )
-            self.dados['status'] = 1
-        except:
-            self.dados['status'] = 0
-        return JsonResponse(self.dados, safe = False)
+                contexto['movimentacoes'] = serialize('json', FluxoDeCaixa.objects.filter(data_hora__gte=data_inicial, data_hora__lte=data_final))
+                contexto['status'] = 200
+            except:
+                contexto['status'] = 500
+            return JsonResponse(contexto)
 
     def put(self, request, **kwargs):
+        payload = parse_qs(request.body.decode())
+        resposta = {}
+
         try:
-            Tesouraria.objects.create(
-                tipo = request.POST.get('tipo'),
-                dataHora = datetime.strptime(request.POST.get('dataHora'), '%d/%m/%Y %H:%M'),
-                valor = float(request.POST.get('valor').replace(',', '.')),
-                descricao = request.POST.get('descricao')
+            FluxoDeCaixa.objects.create(
+                tipo = payload['tipo'][0],
+                data_hora = datetime.strptime(payload['data_hora'][0], '%d/%m/%Y %H:%M'),
+                valor = float(payload['valor'][0].replace(',', '.')),
+                descricao = payload['descricao'][0]
             )
-            self.dados['status'] = 1
+            resposta['status'] = 200
         except:
-            self.dados['status'] = 0
-        return JsonResponse(self.dados, safe = False)
+            resposta['status'] = 500
+        return JsonResponse(resposta)
 
     def delete(self, request, **kwargs):
-        if Tesouraria.objects.filter(id = self.kwargs['tesouraria_id']).exists():
+        payload = parse_qs(request.body.decode())
+        resposta = {}
+
+        if FluxoDeCaixa.objects.filter(id=payload['fluxo_de_caixa_id'][0]).exists():
             try:
-                Tesouraria.objects.get(id = self.kwargs['tesouraria_id']).delete()
-                self.dados['status'] = 1
+                FluxoDeCaixa.objects.get(id=payload['fluxo_de_caixa_id'][0]).delete()
+                resposta['status'] = 200
             except:
-                self.dados['status'] = 2
+                resposta['status'] = 404
         else:
-            self.dados['status'] = 0
-        return JsonResponse(self.dados, safe = False)
+            resposta['status'] = 500
+        return JsonResponse(resposta)

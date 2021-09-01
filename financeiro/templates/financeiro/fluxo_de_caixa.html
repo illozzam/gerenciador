@@ -164,7 +164,7 @@
 	<script src="{% static 'js/boletosBancarios.js' %}"></script>
 
 	<script type="text/javascript">
-		function verificaFormulario() {
+		function verifica_formulario_cadastro() {
 			if ($('#cadastro_tipo').val() != '0' && $('#cadastro_data_hora').val() != '' && $('#cadastro_descricao').val() != '' && $('#cadastro_valor').val() != '') {
 				return true
 			} else {
@@ -172,22 +172,44 @@
 			}
 		}
 
+		function verifica_formulario_pesquisa() {
+			if ($('#pesquisa_data_inicial').val() != '' && $('#pesquisa_data_final').val() != '') {
+				return true
+			} else {
+				return false
+			}
+		}
+
+		function limpa_formulario_cadastro() {
+			$('#codigo_barras').val('')
+			$('#cadastro_tipo').val('0')
+			$('#cadastro_data_hora').val('')
+			$('#cadastro_descricao').val('')
+			$('#cadastro_valor').val('')
+		}
+
 		function cadastrar_fluxo_de_caixa() {
-			if (verificaFormulario()) {
+			if (verifica_formulario_cadastro()) {
 				dados = {
 					tipo: $('#cadastro_tipo').val(),
-					dataHora: $('#cadastro_data_hora').val(),
+					data_hora: $('#cadastro_data_hora').val(),
 					descricao: $('#cadastro_descricao').val(),
 					valor: $('#cadastro_valor').val()
 				}
 
-				$.post('{% url 'financeiro:fluxo-de-caixa' %}', dados)
+				$.ajax({
+					type: 'PUT',
+					url: '{% url 'financeiro:fluxo-de-caixa' %}',
+					contentType: 'application/json',
+					data: dados
+				})
 				.done(function(resposta) {
-					if (resposta.status == '1') {
+					if (resposta.status == 200) {
 						swal({
 							type: 'success',
 							title: 'Cadastro realizado com sucesso'
 						})
+						limpa_formulario_cadastro()
 					} else {
 						swal({
 							type: 'error',
@@ -212,7 +234,7 @@
 			}
 		}
 
-		function limpaDados() {
+		function limpa_tabelas() {
 			$('#tabela_entradas').html(`
 				<tbody>
 					<tr>
@@ -238,64 +260,76 @@
 		}
 
 		function pesquisar_fluxo_de_caixa() {
-			if ($('#pesquisa_data_inicial').val() != '' && $('#pesquisa_data_final').val() != ''){
-				$.get('{% url 'financeiro:fluxo-de-caixa' %}' + `?dataInicial=${$('#pesquisa_data_inicial').val()}&dataFinal=${$('#pesquisa_data_final').val()}`)
+			if (verifica_formulario_pesquisa()){
+				var data_inicial = $('#pesquisa_data_inicial').val()
+				var data_final = $('#pesquisa_data_final').val()
+				$.get('{% url 'financeiro:fluxo-de-caixa' %}' + `?data_inicial=${data_inicial}&data_final=${data_final}`)
 				.done(function(resposta) {
-					//Reiniciar as tabelas
-					var totalEntradas = 0
-					var totalSaidas = 0
-					var saldo = parseFloat(resposta.saldo_anterior)
-					var saldo_anterior = parseFloat(resposta.saldo_anterior)
+					if (resposta.status == 200) {
+						movimentacoes = JSON.parse(resposta.movimentacoes)
 
-					limpaDados()
+						//Reiniciar as tabelas
+						var total_entradas = 0
+						var total_saidas = 0
+						var saldo = parseFloat(resposta.saldo_anterior)
+						var saldo_anterior = parseFloat(resposta.saldo_anterior)
 
-					for (i=0; i<resposta.movimentacoes.length; i++) {
-						if (resposta.movimentacoes[i].tipo == 'E') {
-							totalEntradas += parseFloat(resposta.movimentacoes[i].valor)
-							saldo += parseFloat(resposta.movimentacoes[i].valor)
-							$('#tabela_entradas tr:last').after(`
-								<tr>
-									<td>${moment(resposta.movimentacoes[i].dataHora).format('DD/MM/YYYY HH:mm')}</td>
-									<td>${resposta.movimentacoes[i].descricao}</td>
-									<td>R$ ${parseFloat(resposta.movimentacoes[i].valor).toFixed(2).toString().replace('.',',')}</td>
-									<td></td>
-								</tr>
-							`)
-						} else if (resposta.movimentacoes[i].tipo == 'S') {
-							totalSaidas += parseFloat(resposta.movimentacoes[i].valor)
-							saldo -= parseFloat(resposta.movimentacoes[i].valor)
-							$('#tabela_saidas tr:last').after(`
-								<tr>
-									<td>${moment(resposta.movimentacoes[i].dataHora).format('DD/MM/YYYY HH:mm')}</td>
-									<td>${resposta.movimentacoes[i].descricao}</td>
-									<td>R$ ${parseFloat(resposta.movimentacoes[i].valor).toFixed(2).toString().replace('.',',')}</td>
-									<td>
-										<a href="javascript:excluirTesouraria(${resposta.movimentacoes[i].id})" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
-									</td>
-								</tr>
-							`)
+						limpa_tabelas()
+
+						for (i=0; i<movimentacoes.length; i++) {
+							if (movimentacoes[i].fields.tipo == 'E') {
+								total_entradas += parseFloat(movimentacoes[i].fields.valor)
+								saldo += parseFloat(movimentacoes[i].fields.valor)
+								$('#tabela_entradas tr:last').after(`
+									<tr>
+										<td>${moment(movimentacoes[i].fields.data_hora).format('DD/MM/YYYY HH:mm')}</td>
+										<td>${movimentacoes[i].fields.descricao}</td>
+										<td>R$ ${parseFloat(movimentacoes[i].fields.valor).toFixed(2).toString().replace('.',',')}</td>
+										<td></td>
+									</tr>
+								`)
+							} else if (movimentacoes[i].fields.tipo == 'S') {
+								total_saidas += parseFloat(movimentacoes[i].fields.valor)
+								saldo -= parseFloat(movimentacoes[i].fields.valor)
+								$('#tabela_saidas tr:last').after(`
+									<tr>
+										<td>${moment(movimentacoes[i].fields.data_hora).format('DD/MM/YYYY HH:mm')}</td>
+										<td>${movimentacoes[i].fields.descricao}</td>
+										<td>R$ ${parseFloat(movimentacoes[i].fields.valor).toFixed(2).toString().replace('.',',')}</td>
+										<td>
+											<a href="javascript:excluir_fluxo_de_caixa(${movimentacoes[i].pk})" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+										</td>
+									</tr>
+								`)
+							}
 						}
+
+						//Linhas dos totais
+						$('#tabela_entradas tr:last').after(`
+							<tr style="font-weight: bold;">
+								<td colspan="2">TOTAL</td>
+								<td>R$ ${total_entradas.toFixed(2).toString().replace('.',',')}</td>
+								<td></td>
+							</tr>
+						`)
+						$('#tabela_saidas tr:last').after(`
+							<tr style="font-weight: bold;">
+								<td colspan="2">TOTAL</td>
+								<td>R$ ${total_saidas.toFixed(2).toString().replace('.',',')}</td>
+								<td></td>
+							</tr>
+						`)
+
+						//Caixa de Saldo
+						$('#saldo_anterior').html(`<h3>R$ ${saldo_anterior.toFixed(2).toString().replace('.', ',')}</h3>`)
+						$('#saldo').html(`<h3>R$ ${saldo.toFixed(2).toString().replace('.', ',')}</h3>`)
+					} else {
+						swal(
+							'Erro',
+							'Ocorreu algum erro ao requisitar os dados.',
+							'error'
+						)
 					}
-
-					//Linhas dos totais
-					$('#tabela_entradas tr:last').after(`
-						<tr style="font-weight: bold;">
-							<td colspan="2">TOTAL</td>
-							<td>R$ ${totalEntradas.toFixed(2).toString().replace('.',',')}</td>
-							<td></td>
-						</tr>
-					`)
-					$('#tabela_saidas tr:last').after(`
-						<tr style="font-weight: bold;">
-							<td colspan="2">TOTAL</td>
-							<td>R$ ${totalSaidas.toFixed(2).toString().replace('.',',')}</td>
-							<td></td>
-						</tr>
-					`)
-
-					//Caixa de Saldo
-					$('#saldo_anterior').html(`<h3>R$ ${saldo_anterior.toFixed(2).toString().replace('.', ',')}</h3>`)
-					$('#saldo').html(`<h3>R$ ${saldo.toFixed(2).toString().replace('.', ',')}</h3>`)
 				})
 				.fail(function() {
 					swal(
@@ -313,7 +347,7 @@
 			}
 		}
 
-		function excluirTesouraria(movimento) {
+		function excluir_fluxo_de_caixa(movimento) {
 			swal({
 				title: `Excluir movimento ${movimento}`,
 				text: 'Tem certeza?',
@@ -325,9 +359,14 @@
 			})
 			.then((confirmacao) => {
 				if (confirmacao.value) {
-					$.get(`/financeiro/tesouraria/excluir/${movimento}/`)
+					$.ajax({
+						type: 'DELETE',
+						url: '{% url 'financeiro:fluxo-de-caixa' %}',
+						contentType: 'application/json',
+						data: {fluxo_de_caixa_id: movimento}
+					})
 					.done(function(resposta) {
-						if (resposta.status == 1) {
+						if (resposta.status == 200) {
 							swal({text: 'Movimentação excluída.', type: 'success'})
 							.then(() => {pesquisar_fluxo_de_caixa()})
 						} else {
