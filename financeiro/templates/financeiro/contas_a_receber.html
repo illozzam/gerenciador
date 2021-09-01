@@ -12,37 +12,39 @@
 {% endblock breadcrumb %}
 
 {% block controles %}
-	<div class="row">
-		<div class="col-md-12" id="alertas"></div>
-	</div>
+	{% if perms.financeiro.add_contasareceber %}
+		<div class="row">
+			<div class="col-md-12" id="alertas"></div>
+		</div>
 
-	<div class="row">
-		<div class="col-md-12">
-			<div class="box">
-				<div class="box-header with-border">
-					<div class="box-title">Cadastrar</div>
-				</div>
-				<div class="box-body">
-
-					<div class="row">
-						<div class="col-md-1">Data:</div>
-						<div class="col-md-2"><input type="text" class="form-control" id="data"></div>
-
-						<div class="col-md-1">Valor:</div>
-						<div class="col-md-2"><input type="text" class="form-control" id="valor"></div>
-
-						<div class="col-md-1">Descrição:</div>
-						<div class="col-md-3"><input type="text" class="form-control" id="descricao"></div>
-
-						<div class="col-md-2 text-center">
-							<a href="javascript:cadastrar_conta()" class="btn btn-flat btn-primary"><i class="fa fa-check">&nbsp;</i>Enviar</a>
-						</div>
+		<div class="row">
+			<div class="col-md-12">
+				<div class="box">
+					<div class="box-header with-border">
+						<div class="box-title">Cadastrar</div>
 					</div>
+					<div class="box-body">
 
+						<div class="row">
+							<div class="col-md-1">Data:</div>
+							<div class="col-md-2"><input type="text" class="form-control" id="data"></div>
+
+							<div class="col-md-1">Valor:</div>
+							<div class="col-md-2"><input type="text" class="form-control" id="valor"></div>
+
+							<div class="col-md-1">Descrição:</div>
+							<div class="col-md-3"><input type="text" class="form-control" id="descricao"></div>
+
+							<div class="col-md-2 text-center">
+								<a href="javascript:cadastrar_conta()" class="btn btn-flat btn-primary"><i class="fa fa-check">&nbsp;</i>Enviar</a>
+							</div>
+						</div>
+
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	{% endif %}
 
 	<div class="row">
 		<div class="col-md-12">
@@ -146,26 +148,30 @@
 		function excluir_conta(id_conta) {
 			swal.close()
 
-			$.ajax({
-				type: 'DELETE',
-				url: '{% url 'financeiro:contas-a-receber' %}',
-				contentType: 'application/json',
-				data: {
-					id_conta: id_conta
-				}
-			})
-			.done(function(resposta) {
-				if (resposta.status == 200) {
-					$('#calendario').fullCalendar('removeEvents', id_conta)
-				} else if (resposta.status == 404) {
-					location.reload()
-				} else {
-					$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Informe um administrador do sistema.</div>')
-				}
-			})
-			.fail(function() {
-				$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Recarregue a página e tente novamente.</div>')
-			})
+			{% if perms.financeiro.delete_contasareceber %}
+				$.ajax({
+					type: 'DELETE',
+					url: '{% url 'financeiro:contas-a-receber' %}',
+					contentType: 'application/json',
+					data: {
+						id_conta: id_conta
+					}
+				})
+				.done(function(resposta) {
+					if (resposta.status == 200) {
+						$('#calendario').fullCalendar('removeEvents', id_conta)
+					} else if (resposta.status == 404) {
+						location.reload()
+					} else {
+						$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Informe um administrador do sistema.</div>')
+					}
+				})
+				.fail(function() {
+					$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Recarregue a página e tente novamente.</div>')
+				})
+			{% else %}
+				$('#alertas').html('<div class="alert alert-warning">Usuário sem permissão para realizar esta ação. Se isso for um engano, contate um administrador do sistema.</div>')
+			{% endif %}
 		}
 
 		function reportar_pagamento(id_conta) {
@@ -174,28 +180,37 @@
 				acao: 'reportar-recebimento',
 				id_conta: id_conta
 			}
-			$.post('{% url 'financeiro:contas-a-receber' %}', dados_requisicao)
-			.done(function(resposta) {
-				if (resposta.status == 200) {
-					evento = $('#calendario').fullCalendar('clientEvents', id_conta)[0]
-					evento.backgroundColor = '#0d0'
-					evento.borderColor = '#0d0'
-					$('#calendario').fullCalendar('rerenderEvents')
-				} else {
+
+			{% if perms.financeiro.change_contasareceber %}
+				$.post('{% url 'financeiro:contas-a-receber' %}', dados_requisicao)
+				.done(function(resposta) {
+					if (resposta.status == 200) {
+						evento = $('#calendario').fullCalendar('clientEvents', id_conta)[0]
+						evento.backgroundColor = '#0d0'
+						evento.borderColor = '#0d0'
+						$('#calendario').fullCalendar('rerenderEvents')
+					} else {
+						swal(
+							'Erro ao reportar o pagamento',
+							'Comunique um administrador do sistema',
+							'error'
+						)
+					}
+				})
+				.fail(function() {
 					swal(
 						'Erro ao reportar o pagamento',
-						'Comunique um administrador do sistema',
+						'Recarregue a página e tente novamente.',
 						'error'
 					)
-				}
-			})
-			.fail(function() {
+				})
+			{% else %}
 				swal(
-					'Erro ao reportar o pagamento',
-					'Recarregue a página e tente novamente.',
-					'error'
+					'Sem permissão para realizar esta ação',
+					'Se isso for um engano, contate um administrador do sistema.',
+					'warning'
 				)
-			})
+			{% endif %}
 		}
 
 		$(document).ready(function() {

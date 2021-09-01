@@ -197,34 +197,42 @@
 					valor: $('#cadastro_valor').val()
 				}
 
-				$.ajax({
-					type: 'PUT',
-					url: '{% url 'financeiro:fluxo-de-caixa' %}',
-					contentType: 'application/json',
-					data: dados
-				})
-				.done(function(resposta) {
-					if (resposta.status == 200) {
-						swal({
-							type: 'success',
-							title: 'Cadastro realizado com sucesso'
-						})
-						limpa_formulario_cadastro()
-					} else {
+				{% if perms.financeiro.add_fluxodecaixa %}
+					$.ajax({
+						type: 'PUT',
+						url: '{% url 'financeiro:fluxo-de-caixa' %}',
+						contentType: 'application/json',
+						data: dados
+					})
+					.done(function(resposta) {
+						if (resposta.status == 200) {
+							swal({
+								type: 'success',
+								title: 'Cadastro realizado com sucesso'
+							})
+							limpa_formulario_cadastro()
+						} else {
+							swal({
+								type: 'error',
+								title: 'Erro no cadastro',
+								text: 'Informe um administrador do sistema'
+							})
+						}
+					})
+					.fail(function() {
 						swal({
 							type: 'error',
-							title: 'Erro no cadastro',
-							text: 'Informe um administrador do sistema'
+							title: 'Erro',
+							text: 'Recarregue a página e tente novamente.'
 						})
-					}
-				})
-				.fail(function() {
-					swal({
-						type: 'error',
-						title: 'Erro',
-						text: 'Recarregue a página e tente novamente.'
 					})
-				})
+				{% else %}
+					swal({
+						type: 'warning',
+						title: 'Você não possui permissão para realizar essa ação',
+						text: 'Se isso for um erro, contate o administrador do sistema.'
+					})
+				{% endif %}
 			} else {
 				swal({
 					type: 'warning',
@@ -359,20 +367,24 @@
 			})
 			.then((confirmacao) => {
 				if (confirmacao.value) {
-					$.ajax({
-						type: 'DELETE',
-						url: '{% url 'financeiro:fluxo-de-caixa' %}',
-						contentType: 'application/json',
-						data: {fluxo_de_caixa_id: movimento}
-					})
-					.done(function(resposta) {
-						if (resposta.status == 200) {
-							swal({text: 'Movimentação excluída.', type: 'success'})
-							.then(() => {pesquisar_fluxo_de_caixa()})
-						} else {
-							swal({text: 'Erro ao excluir a movimentação', type: 'error'})
-						}
-					})
+					{% if perms.financeiro.delete_fluxodecaixa %}
+						$.ajax({
+							type: 'DELETE',
+							url: '{% url 'financeiro:fluxo-de-caixa' %}',
+							contentType: 'application/json',
+							data: {fluxo_de_caixa_id: movimento}
+						})
+						.done(function(resposta) {
+							if (resposta.status == 200) {
+								swal({text: 'Movimentação excluída.', type: 'success'})
+								.then(() => {pesquisar_fluxo_de_caixa()})
+							} else {
+								swal({text: 'Erro ao excluir a movimentação', type: 'error'})
+							}
+						})
+					{% else %}
+						swal({title: 'Sem permissão para realizar esta ação', text: 'Se isso for um engano, contate um administrador do sistema', type: 'warning'})
+					{% endif %}
 				}
 			})
 		}

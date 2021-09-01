@@ -1,10 +1,8 @@
 from django.db import models
 from django.utils import timezone
-from principal.models import Usuario
 
 
 class ContasAPagar(models.Model):
-	usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
 	data_hora_cadastro = models.DateTimeField(auto_now_add=True)
 	data = models.DateField()
 	valor = models.DecimalField(max_digits=10, decimal_places=2)

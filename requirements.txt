@@ -3,3 +3,4 @@ django-cron
 django-summernote
 Pillow
 Faker
+libgravatar

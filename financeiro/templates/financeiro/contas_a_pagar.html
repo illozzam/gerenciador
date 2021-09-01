@@ -12,47 +12,50 @@
 {% endblock breadcrumb %}
 
 {% block controles %}
-	<div class="row">
-		<div class="col-md-12" id="alertas"></div>
-	</div>
 
-	<div class="row">
-		<div class="col-md-12">
-			<div class="box">
-				<div class="box-header with-border">
-					<div class="box-title">Cadastrar</div>
-				</div>
-				<div class="box-body">
+	{% if perms.financeiro.add_contasapagar %}
+		<div class="row">
+			<div class="col-md-12" id="alertas"></div>
+		</div>
 
-					<div class="row">
-						<div class="col-md-10">
-							<div class="row">
-								<div class="col-md-2">Data:</div>
-								<div class="col-md-2"><input type="text" class="form-control" id="data"></div>
-
-								<div class="col-md-1">Valor:</div>
-								<div class="col-md-2"><input type="text" class="form-control" id="valor"></div>
-
-								<div class="col-md-1">Descrição:</div>
-								<div class="col-md-4"><input type="text" class="form-control" id="descricao"></div>
-							</div>
-
-							<div class="row" style="padding-top: 10px;">
-								<div class="col-md-2">Código de Barras:</div>
-								<div class="col-md-10"><input type="text" class="form-control" id="codigo_barras" onblur="calcula_codigo()"></div>
-							</div>
-						</div>
-						<div class="col-md-2 text-center">
-							<a href="javascript:cadastrar_conta()" class="btn btn-flat btn-block btn-primary" style="height: 78px; padding-top: 23px; font-size: 20px;">
-								<i class="fa fa-check">&nbsp;</i>Enviar
-							</a>
-						</div>
+		<div class="row">
+			<div class="col-md-12">
+				<div class="box">
+					<div class="box-header with-border">
+						<div class="box-title">Cadastrar</div>
 					</div>
+					<div class="box-body">
 
+						<div class="row">
+							<div class="col-md-10">
+								<div class="row">
+									<div class="col-md-2">Data:</div>
+									<div class="col-md-2"><input type="text" class="form-control" id="data"></div>
+
+									<div class="col-md-1">Valor:</div>
+									<div class="col-md-2"><input type="text" class="form-control" id="valor"></div>
+
+									<div class="col-md-1">Descrição:</div>
+									<div class="col-md-4"><input type="text" class="form-control" id="descricao"></div>
+								</div>
+
+								<div class="row" style="padding-top: 10px;">
+									<div class="col-md-2">Código de Barras:</div>
+									<div class="col-md-10"><input type="text" class="form-control" id="codigo_barras" onblur="calcula_codigo()"></div>
+								</div>
+							</div>
+							<div class="col-md-2 text-center">
+								<a href="javascript:cadastrar_conta()" class="btn btn-flat btn-block btn-primary" style="height: 78px; padding-top: 23px; font-size: 20px;">
+									<i class="fa fa-check">&nbsp;</i>Enviar
+								</a>
+							</div>
+						</div>
+
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	{% endif %}
 
 	<div class="row">
 		<div class="col-md-12">
@@ -125,36 +128,39 @@
 					codigo_barras: $('#codigo_barras').val()
 				}
 
-				$.ajax({
-					url: '{% url 'financeiro:contas-a-pagar' %}',
-					type: 'PUT',
-					data: dados,
-				})
-				.done(function(resposta){
-					if (resposta.status == 200) {
-						conta = JSON.parse(resposta.conta)
-						$('#calendario').fullCalendar('renderEvent', {
-							id: conta[0].pk,
-							valor: 'R$ ' + parseFloat(conta[0].fields.valor).toFixed(2).toString().replace('.', ','),
-							descricao: conta[0].fields.descricao,
-							codigo_barras: conta[0].fields.codigo_barras,
+				{% if perms.financeiro.add_contasapagar %}
 
-							title: conta[0].fields.descricao + ' - R$ ' + parseFloat(conta[0].fields.valor).toFixed(2).toString().replace('.',','),
-							start: moment(conta[0].fields.data),
-							end: moment(conta[0].fields.data),
-							allDay: true,
-							backgroundColor: '#a00',
-							borderColor: '#a00'
-						}, true)
+					$.ajax({
+						url: '{% url 'financeiro:contas-a-pagar' %}',
+						type: 'PUT',
+						data: dados,
+					})
+					.done(function(resposta){
+						if (resposta.status == 200) {
+							conta = JSON.parse(resposta.conta)
+							$('#calendario').fullCalendar('renderEvent', {
+								id: conta[0].pk,
+								valor: 'R$ ' + parseFloat(conta[0].fields.valor).toFixed(2).toString().replace('.', ','),
+								descricao: conta[0].fields.descricao,
+								codigo_barras: conta[0].fields.codigo_barras,
 
-						limpa_formulario()
-					} else {
-						$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Informe um administrador do sistema</div>')
-					}
-				})
-				.fail(function() {
-					$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Tente novamente</div>')
-				})
+								title: conta[0].fields.descricao + ' - R$ ' + parseFloat(conta[0].fields.valor).toFixed(2).toString().replace('.',','),
+								start: moment(conta[0].fields.data),
+								end: moment(conta[0].fields.data),
+								allDay: true,
+								backgroundColor: '#a00',
+								borderColor: '#a00'
+							}, true)
+
+							limpa_formulario()
+						} else {
+							$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Informe um administrador do sistema</div>')
+						}
+					})
+					.fail(function() {
+						$('#alertas').html('<div class="alert alert-danger">Houve um erro ao cadastrar a conta. Tente novamente</div>')
+					})
+				{% endif %}
 			} else {
 				$('#alertas').html('<div class="alert alert-warning">Preencha os campos corretamente e tente de novo.</div>')
 			}
@@ -162,22 +168,30 @@
 
 		function excluir_conta(id_conta) {
 			$('#janelaModal').modal('hide')
-			$.ajax({
-				type: 'DELETE',
-				url: '{% url 'financeiro:contas-a-pagar' %}?id_conta=' + id_conta
-			})
-			.done(function(resposta) {
-				if (resposta.status == 200) {
-					$('#calendario').fullCalendar('removeEvents', id_conta)
-				} else if (resposta.status == 404) {
-					location.reload()
-				} else {
-					$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Informe um administrador do sistema.</div>')
-				}
-			})
-			.fail(function() {
-				$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Recarregue a página e tente novamente.</div>')
-			})
+			{% if perms.financeiro.delete_contasapagar %}
+				$.ajax({
+					type: 'DELETE',
+					url: '{% url 'financeiro:contas-a-pagar' %}',
+					contentType: 'application/json',
+					data: {
+						id_conta: id_conta
+					}
+				})
+				.done(function(resposta) {
+					if (resposta.status == 200) {
+						$('#calendario').fullCalendar('removeEvents', id_conta)
+					} else if (resposta.status == 404) {
+						location.reload()
+					} else {
+						$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Informe um administrador do sistema.</div>')
+					}
+				})
+				.fail(function() {
+					$('#alertas').html('<div class="alert alert-danger">Erro ao excluir o evento. Recarregue a página e tente novamente.</div>')
+				})
+			{% else %}
+				$('#alertas').html('<div class="alert alert-warning">Usuário sem permissão para realizar esta ação. Se isso for um engano, contate um administrador do sistema.</div>')
+			{% endif %}
 		}
 
 		function reportar_pagamento(id_conta) {
@@ -186,20 +200,25 @@
 				acao: 'reportar-pagamento',
 				id_conta: id_conta,
 			}
-			$.post('{% url 'financeiro:contas-a-pagar' %}', dados_requisicao)
-			.done(function(resposta) {
-				if (resposta.status == 200) {
-					evento = $('#calendario').fullCalendar('clientEvents', id_conta)[0]
-					evento.backgroundColor = '#0d0'
-					evento.borderColor = '#0d0'
-					$('#calendario').fullCalendar('rerenderEvents')
-				} else {
-					$('#alertas').html('<div class="alert alert-danger">Erro ao reportar o pagamento. Informe um administrador do sistema.</div>')
-				}
-			})
-			.fail(function() {
-				$('#alertas').html('<div class="alert alert-danger">Erro ao reportar o pagamento. Recarregue a página e tente novamente.</div>')
-			})
+
+			{% if perms.financeiro.change_contasapagar %}
+				$.post('{% url 'financeiro:contas-a-pagar' %}', dados_requisicao)
+				.done(function(resposta) {
+					if (resposta.status == 200) {
+						evento = $('#calendario').fullCalendar('clientEvents', id_conta)[0]
+						evento.backgroundColor = '#0d0'
+						evento.borderColor = '#0d0'
+						$('#calendario').fullCalendar('rerenderEvents')
+					} else {
+						$('#alertas').html('<div class="alert alert-danger">Erro ao reportar o pagamento. Informe um administrador do sistema.</div>')
+					}
+				})
+				.fail(function() {
+					$('#alertas').html('<div class="alert alert-danger">Erro ao reportar o pagamento. Recarregue a página e tente novamente.</div>')
+				})
+			{% else %}
+				$('#alertas').html('<div class="alert alert-warning">Você não tem permissão para realizar esta ação. Se isso for um engano, contate um administrador do sistema</div>')
+			{% endif %}
 		}
 
 		function calcula_codigo() {

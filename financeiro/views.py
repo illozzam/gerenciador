@@ -36,7 +36,6 @@ class ContasAPagarView(LoginRequiredMixin, View):
             codigo_barras = ''
 
         dados_cadastro = {
-            'usuario': request.user.usuario_set.first(),
             'data': datetime.strptime(payload['data'][0], '%Y-%m-%d'),
             'valor': float(payload['valor'][0].replace(',', '.')),
             'descricao': payload['descricao'][0],
@@ -71,10 +70,11 @@ class ContasAPagarView(LoginRequiredMixin, View):
         return JsonResponse(resposta)
 
     def delete(self, request, **kwargs):
+        payload = parse_qs(request.body.decode())
         resposta = dict()
-        if 'id_conta' in request.GET.keys():
-            if ContasAPagar.objects.filter(id=request.GET.get('id_conta')).exists():
-                ContasAPagar.objects.get(id=request.GET.get('id_conta')).delete()
+        if 'id_conta' in payload.keys():
+            if ContasAPagar.objects.filter(id=payload['id_conta'][0]).exists():
+                ContasAPagar.objects.get(id=payload['id_conta'][0]).delete()
                 resposta['status'] = 200
             else:
                 resposta['status'] = 404

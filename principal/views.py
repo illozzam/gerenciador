@@ -1,13 +1,9 @@
-#coding: utf-8
 import os
 from datetime import datetime
-
-import pytz
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -20,7 +16,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django_cron import CronJobBase, Schedule
 
-from .models import Config, Usuario
+from .models import Config
 
 
 ########################################## CRONS ##############################################################
@@ -79,8 +75,7 @@ class LoginView(View):
 		return render(request, template, {})
 
 
-@method_decorator(login_required, name = 'dispatch')
-class TelaView(View):
+class TelaView(LoginRequiredMixin, View):
 	tela = 'inicial'
 
 	def get(self, request, **kwargs):
@@ -88,43 +83,36 @@ class TelaView(View):
 			template = 'base.html'
 
 		elif self.tela == 'usuario-perfil':
-			template = 'telas/usuario-prefil.html'
+			template = 'telas/usuario-perfil.html'
 
 		return render(request, template, {})
 
 
-@method_decorator([login_required, csrf_exempt], name = 'dispatch')
+@method_decorator(csrf_exempt, name = 'dispatch')
 class AtualizarUsuarioView(LoginRequiredMixin, View):
 	dados = {}
 	def post(self, request, **kwargs):
 		contexto = {}
 		try:
-			contexto['status'] = 200
-			usuario = request.user.usuario_set.first()
-			if request.POST.get('email') != usuario.usuario.email:
-				usuario.usuario.email = request.POST.get('email')
-				usuario.usuario.save()
+			usuario = request.user
+			if request.POST.get('email') != usuario.email:
+				usuario.email = request.POST.get('email')
+				usuario.save()
 			if request.POST.get('senha'):
 				if request.POST.get('senha') == request.POST.get('senha2'):
-					usuario.usuario.set_password(request.POST.get('senha'))
-					usuario.usuario.save()
+					usuario.set_password(request.POST.get('senha'))
+					usuario.save()
 				else:
 					raise ValidationError
-					# contexto['status'] = 400
-			if usuario.telefone != request.POST.get('telefone'):
-				usuario.telefone = request.POST.get('telefone')
-				usuario.save()
-			if usuario.facebook != request.POST.get('facebook'):
-				usuario.facebook = request.POST.get('facebook')
-				usuario.save()
+			logout(request)
+			contexto['status'] = 200
 		except ValidationError:
 			contexto['status'] = 401
 		except:
 			contexto['status'] = 500
-		return JsonResponse(self.dados)
+		return JsonResponse(contexto)
 
 
-@method_decorator(login_required, name = 'dispatch')
 class LogoutView(LoginRequiredMixin, View):
 	def get(self, request, **kwargs):
 		logout(request)
