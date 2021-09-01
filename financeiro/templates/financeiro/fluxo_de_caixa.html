@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block titulo %}Fluxo de Caixa{% endblock titulo %}
+
+{% block breadcrumb %}
+	<ol class="breadcrumb">
+		<li><a href="{% url 'principal:inicial' %}"><i class="fa fa-dashboard"></i> Inicial</a></li>
+		<li class="active">Tesouraria</li>
+	</ol>
+{% endblock breadcrumb %}
+
+{% block controles %}
+	<div class="row">
+		<div class="col-md-6">
+			<div class="box">
+				<div class="box-header with-border">
+					<div class="box-title">Cadastro</div>
+				</div>
+				<div class="box-body">
+
+					<div class="row">
+						<div class="col-md-2">Código de Barras:</div>
+						<div class="col-md-10"><input type="text" class="form-control" id="codigo_barras" onblur="calcula_codigo()"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-1 text-right">Tipo:</div>
+						<div class="col-md-5"><select id="cadastro_tipo" class="form-control">
+								<option value="0" selected disabled>Selecione...</option>
+								<option value="E">Entrada</option>
+								<option value="S">Saída</option>
+							</select></div>
+
+						<div class="col-md-2 text-right">Data e Hora:</div>
+						<div class="col-md-4"><input type="text" class="form-control" id="cadastro_data_hora"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-1 text-right">Desc.:</div>
+						<div class="col-md-5"><input type="text" class="form-control" id="cadastro_descricao"></div>
+
+						<div class="col-md-2 text-right">Valor:</div>
+						<div class="col-md-4"><input type="text" class="form-control" id="cadastro_valor"></div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-12 text-center">
+							<a href="javascript:cadastrar_fluxo_de_caixa()" class="btn btn-primary btn-flat btn-block">
+								<i class="fa fa-check">&nbsp;</i>Enviar
+							</a>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-6">
+			<div class="box">
+				<div class="box-header with-border">
+					<div class="box-title">Consulta</div>
+				</div>
+				<div class="box-body">
+
+					<div class="row">
+						<div class="col-md-2 text-right">Período:</div>
+						<div class="col-md-10">
+						    <div class="input-daterange input-group" id="pesquisaData">
+						        <input type="text" class="input-sm form-control" id="pesquisa_data_inicial" />
+						        <span class="input-group-addon">até</span>
+						        <input type="text" class="input-sm form-control" id="pesquisa_data_final" />
+						    </div>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-12">
+							<a href="javascript:pesquisar_fluxo_de_caixa()" class="btn btn-primary btn-flat btn-block">
+								<i class="fa fa-check">&nbsp;</i>Enviar
+							</a>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6">
+			<div class="box box-warning">
+				<div class="box-header with-border">
+					<div class="box-title">Saldo Anterior</div>
+				</div>
+				<div class="box-body text-center" id="saldo_anterior"></div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="box box-success">
+				<div class="box-header with-border">
+					<div class="box-title">Saldo</div>
+				</div>
+				<div class="box-body text-center" id="saldo"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6">
+			<div class="box box-info">
+				<div class="box-header with-border">
+					<div class="box-title">Entradas</div>
+				</div>
+				<div class="box-body table-responsive no-padding">
+					<table class="table table-hover" id="tabela_entradas">
+						<tbody>
+							<tr>
+								<th>Data e Hora</th>
+								<th>Descrição</th>
+								<th>Valor</th>
+								<th></th>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-6">
+			<div class="box box-danger">
+				<div class="box-header with-border">
+					<div class="box-title">Saídas</div>
+				</div>
+				<div class="box-body table-responsive no-padding">
+					<table class="table table-hover" id="tabela_saidas">
+						<tbody>
+							<tr>
+								<th>Data e Hora</th>
+								<th>Descrição</th>
+								<th>Valor</th>
+								<th></th>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock controles %}
+
+{% block cabecalho %}
+	<link rel="stylesheet" href="{% static 'bibliotecas/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
+	<link rel="stylesheet" href="{% static 'bibliotecas/bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}">
+{% endblock cabecalho %}
+
+{% block processamento %}
+	<script src="{% static 'bibliotecas/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script>
+	<script src="{% static 'bibliotecas/bootstrap-datepicker/dist/locales/bootstrap-datepicker.pt-BR.min.js' %}"></script>
+
+	<script src="{% static 'bibliotecas/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
+
+	<script src="{% static 'js/boletosBancarios.js' %}"></script>
+
+	<script type="text/javascript">
+		function verifica_formulario_cadastro() {
+			if ($('#cadastro_tipo').val() != '0' && $('#cadastro_data_hora').val() != '' && $('#cadastro_descricao').val() != '' && $('#cadastro_valor').val() != '') {
+				return true
+			} else {
+				return false
+			}
+		}
+
+		function verifica_formulario_pesquisa() {
+			if ($('#pesquisa_data_inicial').val() != '' && $('#pesquisa_data_final').val() != '') {
+				return true
+			} else {
+				return false
+			}
+		}
+
+		function limpa_formulario_cadastro() {
+			$('#codigo_barras').val('')
+			$('#cadastro_tipo').val('0')
+			$('#cadastro_data_hora').val('')
+			$('#cadastro_descricao').val('')
+			$('#cadastro_valor').val('')
+		}
+
+		function cadastrar_fluxo_de_caixa() {
+			if (verifica_formulario_cadastro()) {
+				dados = {
+					tipo: $('#cadastro_tipo').val(),
+					data_hora: $('#cadastro_data_hora').val(),
+					descricao: $('#cadastro_descricao').val(),
+					valor: $('#cadastro_valor').val()
+				}
+
+				{% if perms.financeiro.add_fluxodecaixa %}
+					$.ajax({
+						type: 'PUT',
+						url: '{% url 'financeiro:fluxo-de-caixa' %}',
+						contentType: 'application/json',
+						data: dados
+					})
+					.done(function(resposta) {
+						if (resposta.status == 200) {
+							swal({
+								type: 'success',
+								title: 'Cadastro realizado com sucesso'
+							})
+							limpa_formulario_cadastro()
+						} else {
+							swal({
+								type: 'error',
+								title: 'Erro no cadastro',
+								text: 'Informe um administrador do sistema'
+							})
+						}
+					})
+					.fail(function() {
+						swal({
+							type: 'error',
+							title: 'Erro',
+							text: 'Recarregue a página e tente novamente.'
+						})
+					})
+				{% else %}
+					swal({
+						type: 'warning',
+						title: 'Você não possui permissão para realizar essa ação',
+						text: 'Se isso for um erro, contate o administrador do sistema.'
+					})
+				{% endif %}
+			} else {
+				swal({
+					type: 'warning',
+					title: 'Dados Incorretos',
+					text: 'Preencha os campos corretamente e tente de novo.'
+				})
+			}
+		}
+
+		function limpa_tabelas() {
+			$('#tabela_entradas').html(`
+				<tbody>
+					<tr>
+						<th>Data e Hora</th>
+						<th>Descrição</th>
+						<th>Valor</th>
+						<th></th>
+					</tr>
+				</tbody>
+			`)
+			$('#tabela_saidas').html(`
+				<tbody>
+					<tr>
+						<th>Data e Hora</th>
+						<th>Descrição</th>
+						<th>Valor</th>
+						<th></th>
+					</tr>
+				</tbody>
+			`)
+			$('#saldo').html('')
+			$('#saldo_anterior').html('')
+		}
+
+		function pesquisar_fluxo_de_caixa() {
+			if (verifica_formulario_pesquisa()){
+				var data_inicial = $('#pesquisa_data_inicial').val()
+				var data_final = $('#pesquisa_data_final').val()
+				$.get('{% url 'financeiro:fluxo-de-caixa' %}' + `?data_inicial=${data_inicial}&data_final=${data_final}`)
+				.done(function(resposta) {
+					if (resposta.status == 200) {
+						movimentacoes = JSON.parse(resposta.movimentacoes)
+
+						//Reiniciar as tabelas
+						var total_entradas = 0
+						var total_saidas = 0
+						var saldo = parseFloat(resposta.saldo_anterior)
+						var saldo_anterior = parseFloat(resposta.saldo_anterior)
+
+						limpa_tabelas()
+
+						for (i=0; i<movimentacoes.length; i++) {
+							if (movimentacoes[i].fields.tipo == 'E') {
+								total_entradas += parseFloat(movimentacoes[i].fields.valor)
+								saldo += parseFloat(movimentacoes[i].fields.valor)
+								$('#tabela_entradas tr:last').after(`
+									<tr>
+										<td>${moment(movimentacoes[i].fields.data_hora).format('DD/MM/YYYY HH:mm')}</td>
+										<td>${movimentacoes[i].fields.descricao}</td>
+										<td>R$ ${parseFloat(movimentacoes[i].fields.valor).toFixed(2).toString().replace('.',',')}</td>
+										<td></td>
+									</tr>
+								`)
+							} else if (movimentacoes[i].fields.tipo == 'S') {
+								total_saidas += parseFloat(movimentacoes[i].fields.valor)
+								saldo -= parseFloat(movimentacoes[i].fields.valor)
+								$('#tabela_saidas tr:last').after(`
+									<tr>
+										<td>${moment(movimentacoes[i].fields.data_hora).format('DD/MM/YYYY HH:mm')}</td>
+										<td>${movimentacoes[i].fields.descricao}</td>
+										<td>R$ ${parseFloat(movimentacoes[i].fields.valor).toFixed(2).toString().replace('.',',')}</td>
+										<td>
+											<a href="javascript:excluir_fluxo_de_caixa(${movimentacoes[i].pk})" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+										</td>
+									</tr>
+								`)
+							}
+						}
+
+						//Linhas dos totais
+						$('#tabela_entradas tr:last').after(`
+							<tr style="font-weight: bold;">
+								<td colspan="2">TOTAL</td>
+								<td>R$ ${total_entradas.toFixed(2).toString().replace('.',',')}</td>
+								<td></td>
+							</tr>
+						`)
+						$('#tabela_saidas tr:last').after(`
+							<tr style="font-weight: bold;">
+								<td colspan="2">TOTAL</td>
+								<td>R$ ${total_saidas.toFixed(2).toString().replace('.',',')}</td>
+								<td></td>
+							</tr>
+						`)
+
+						//Caixa de Saldo
+						$('#saldo_anterior').html(`<h3>R$ ${saldo_anterior.toFixed(2).toString().replace('.', ',')}</h3>`)
+						$('#saldo').html(`<h3>R$ ${saldo.toFixed(2).toString().replace('.', ',')}</h3>`)
+					} else {
+						swal(
+							'Erro',
+							'Ocorreu algum erro ao requisitar os dados.',
+							'error'
+						)
+					}
+				})
+				.fail(function() {
+					swal(
+						'Erro',
+						'Recarregue a página e tente novamente',
+						'error'
+					)
+				})
+			} else {
+				swal(
+					'Dados Incorretos',
+					'Preencha os campos corretamente e tente de novo.',
+					'warning'
+				)
+			}
+		}
+
+		function excluir_fluxo_de_caixa(movimento) {
+			swal({
+				title: `Excluir movimento ${movimento}`,
+				text: 'Tem certeza?',
+				type: 'warning',
+				showCancelButton: true,
+				confirmButtonClass: 'btn-danger',
+				confirmButtonText: 'Sim',
+				closeOnConfirm: false
+			})
+			.then((confirmacao) => {
+				if (confirmacao.value) {
+					{% if perms.financeiro.delete_fluxodecaixa %}
+						$.ajax({
+							type: 'DELETE',
+							url: '{% url 'financeiro:fluxo-de-caixa' %}',
+							contentType: 'application/json',
+							data: {fluxo_de_caixa_id: movimento}
+						})
+						.done(function(resposta) {
+							if (resposta.status == 200) {
+								swal({text: 'Movimentação excluída.', type: 'success'})
+								.then(() => {pesquisar_fluxo_de_caixa()})
+							} else {
+								swal({text: 'Erro ao excluir a movimentação', type: 'error'})
+							}
+						})
+					{% else %}
+						swal({title: 'Sem permissão para realizar esta ação', text: 'Se isso for um engano, contate um administrador do sistema', type: 'warning'})
+					{% endif %}
+				}
+			})
+		}
+
+		function calcula_codigo() {
+			if ($('#codigo_barras').val().length == 54) {
+				var codigo_barras = $('#codigo_barras').val().replace(' ', '').replace('.', '')
+				codigo = calcula_barra(codigo_barras)
+				var vencimento = fator_vencimento(codigo.substr(5, 4))
+				$('#cadastro_tipo').val('S')
+				//$('#cadastro_data_hora').val(moment(new Date).format('DD/MM/YYYY HH:mm'))
+				$('#cadastro_valor').val(codigo.substr(9, 8)*1 + ',' + codigo.substr(17, 2))
+				$('#cadastro_data_hora').focus()
+			}
+		}
+
+		$(document).ready(function() {
+			$('#pesquisaData').datepicker({
+				format: "yyyy-mm-dd",
+				todayBtn: true,
+				language: "pt-BR",
+				todayHighlight: true
+			});
+
+			$('#cadastro_data_hora').datetimepicker({
+				locale: 'pt-BR'
+			});
+		})
+	</script>
+{% endblock processamento %}

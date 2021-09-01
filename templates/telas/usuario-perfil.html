@@ -23,19 +23,8 @@
 						<div class="col-md-1">Sobrenome:</div>
 						<div class="col-md-3"><input type="text" class="form-control" id="sobrenome" disabled value="{{request.user.last_name}}"></div>
 
-						<div class="col-md-1">Facebook:</div>
-						<div class="col-md-3"><input type="text" class="form-control" id="facebook" value="{{request.user.usuario_set.first.facebook}}" placeholder="ID do Facebook"></div>
-					</div>
-
-					<div class="row" style="padding-top: 10px;">
-						<div class="col-md-1">Cargo:</div>
-						<div class="col-md-3"><input type="text" class="form-control" id="cargo" disabled value="{{request.user.usuario_set.first.cargo}}"></div>
-
 						<div class="col-md-1">E-mail:</div>
 						<div class="col-md-3"><input type="email" class="form-control" value="{{request.user.email}}" id="email"></div>
-
-						<div class="col-md-1">Telefone:</div>
-						<div class="col-md-3"><input type="text" class="form-control" id="telefone" value="{{request.user.usuario_set.first.telefone}}" placeholder="Telefone"></div>
 					</div>
 
 					<div class="row" style="padding-top: 10px;">
@@ -63,29 +52,28 @@
 
 {% block processamento %}
 	<script>
-		function validaFormulario() {
+		function valida_formulario() {
 			status = true
 			if ($('#email').val() == '') { status = false }
 			return status
 		}
 
 		function enviar() {
-			if (validaFormulario()) {
+			if (valida_formulario()) {
 				dados = {
-					facebook: $('#facebook').val(),
 					email: $('#email').val(),
-					telefone: $('#telefone').val(),
 					senha: $('#senha').val(),
 					senha2: $('#senha2').val()
 				}
 
-				$.post('{% url 'funcaoAtualizarUsuario' %}', dados)
+				$.post('{% url 'principal:usuario-atualizar' %}', dados)
 				.done(function(resposta) {
 					if (resposta.status == 200) {
 						swal({
 							type: 'success',
 							title: 'Dados atualizados com sucesso.'
 						})
+						.then(() => {window.location.reload()})
 					} else {
 						swal(
 							'Erro',
