@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'django_summernote',
+    'https',
     'principal',
     'financeiro',
     #'django_cron',
@@ -144,17 +144,6 @@ STATICFILES_DIRS = [
 ]
 
 MEDIA_ROOT = BASE_DIR / 'media'
-
-SUMMERNOTE_CONFIG = {
-	'iframe': True,
-	'width': '100%',
-	'height': '500',
-	'lang': 'pt-BR',
-	'attachment_upload_to': 'uploads/summernote',
-	'js': (
-		'django_summernote/lang/summernote.pt-BR.min.js',
-	),
-}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

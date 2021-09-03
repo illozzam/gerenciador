@@ -1,6 +1,4 @@
 Django==3.2.5
-django-cron
-django-summernote
-Pillow
 Faker
 libgravatar
+gunicorn
