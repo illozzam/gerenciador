@@ -37,6 +37,12 @@
   <div class="login-box-body">
     <p class="login-box-msg">Faça o seu login para entrar</p>
 
+    {% if messages %}
+      {% for message in messages %}
+        <div style="color: red">{{message}}</div>{% if not forloop.last %}<br/>{% endif %}
+      {% endfor %}
+    {% endif %}
+
     <form action="{% url 'autenticacao:login' %}" id="signin-form_id" method="POST">
 		{% csrf_token %}
       <div class="form-group has-feedback">
