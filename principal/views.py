@@ -1,52 +1,12 @@
-import os
-from datetime import datetime
-
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django_cron import CronJobBase, Schedule
-
-from .models import Config
-
-
-########################################## CRONS ##############################################################
-class EnviarEmails(CronJobBase):
-	tempo = 1 #Executar o código do() a cada 1 minuto
-	schedule = Schedule(run_every_mins = tempo)
-	code = 'principal.views.EnviarEmails'
-
-	def do(self):
-		consultorias = Consultoria.objects.filter(
-			enviado = False,
-			dataHoraEnvio__lte = timezone.now()
-		)
-
-		for consultoria in consultorias:
-			email = EmailMessage(
-				subject = consultoria.empresa,
-				body = consultoria.mensagem,
-				from_email = '"Julyanna Veras" <administracao@mazzollisistemas.com.br>',
-				to = [consultoria.email],
-				bcc = ['mazzolli@mazzollisistemas.com.br'],
-				reply_to = ['administracao@mazzollisistemas.com.br'],
-				headers = {}
-			)
-			email.content_subtype = 'html'
-			email.send()
-
-			consultoria.enviado = True
-			consultoria.save()
-########################################## /CRONS #############################################################
 
 
 class LoginView(View):

@@ -47,9 +47,9 @@ INSTALLED_APPS = [
     #'django_cron',
 ]
 
-CRON_CLASSES = [
-    'principal.views.EnviarEmails',
-]
+# CRON_CLASSES = [
+#     'principal.crons.EnviarEmails',
+# ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
