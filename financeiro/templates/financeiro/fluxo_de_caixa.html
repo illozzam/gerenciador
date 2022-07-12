@@ -60,6 +60,28 @@
 		<div class="col-md-6">
 			<div class="box">
 				<div class="box-header with-border">
+					<div class="box-title">Upload Extrato Bancário</div>
+				</div>
+				<div class="box-body">
+					<div class="row">
+						<div class="col-md-12">
+							<form id="upload_extrato_bancario" action="{% url 'financeiro:extrato-bancario' %}" method="POST" enctype="multipart/form-data">
+								{% csrf_token %}
+								<input type="file" name="extrato_bancario">
+							</form>
+						</div>
+					</div>
+					<div class="row" style="padding-top: 5px;">
+						<div class="col-md-12">
+							<button class="btn btn-primary btn-flat btn-block" type="submit" form="upload_extrato_bancario">
+								<i class="fa fa-check"></i>&nbsp;Enviar
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box">
+				<div class="box-header with-border">
 					<div class="box-title">Consulta</div>
 				</div>
 				<div class="box-body">
@@ -82,9 +104,8 @@
 							</a>
 						</div>
 					</div>
-
 				</div>
-			</div>
+			</div>			
 		</div>
 	</div>
 

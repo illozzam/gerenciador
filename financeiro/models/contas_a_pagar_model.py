@@ -1,8 +1,10 @@
 from django.db import models
+from financeiro.models import Categoria
 
 
 class ContasAPagar(models.Model):
     data_hora_cadastro = models.DateTimeField(auto_now_add=True)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     data = models.DateField()
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     descricao = models.CharField(max_length=50, verbose_name="descrição")
