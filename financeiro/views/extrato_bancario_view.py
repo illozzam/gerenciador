@@ -1,11 +1,9 @@
-import codecs
-import csv
-
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.views import View
-from financeiro.models import ContasAPagar, ContasAReceber, FluxoDeCaixa
-from datetime import datetime
+from financeiro.models import FluxoDeCaixa
+from financeiro.services.extrato_bancario import ExtratoBancarioService
 
 
 class ExtratoBancarioView(LoginRequiredMixin, View):
@@ -15,23 +13,16 @@ class ExtratoBancarioView(LoginRequiredMixin, View):
             "mensagem": "",
         }
 
-        movimentacoes = []
-
-        leitor = csv.reader(
-            codecs.iterdecode(request.FILES["extrato_bancario"], "utf-8"), delimiter=";"
-        )
-
-        for linha in leitor:
-            if len(linha) == 4 and linha[0] != "DATA LANÇAMENTO":
-                movimentacoes.append(
-                    FluxoDeCaixa(
-                        # TODO: Definir categoria
-                        tipo='S' if float(linha[2]) < 0 else 'E',
-                        data_hora=datetime.strptime(linha[0], "%d/%m/%Y").replace(hour=9, minute=0, second=0, microsecond=0),
-                        valor=abs(float(linha[2])),
-                        descricao=linha[1],
-                    )
-                )
+        try:
+            movimentacoes = ExtratoBancarioService.extrair(
+                request.FILES["extrato_bancario"]
+            )
+            FluxoDeCaixa.objects.bulk_create(movimentacoes)
+        except Exception as error:
+            resposta["status"] = "ERRO"
+            resposta["mensagem"] = str(error)
+            messages.error(request, str(error))
+            return JsonResponse(resposta)
 
         resposta["status"] = "OK"
         return JsonResponse(resposta)

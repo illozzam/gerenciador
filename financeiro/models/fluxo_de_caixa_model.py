@@ -9,7 +9,7 @@ class FluxoDeCaixa(models.Model):
         ["S", "Saída"],
     ]
 
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, null=True, blank=True)
     tipo = models.CharField(max_length=1, choices=tipos_fluxo)
     data = models.DateField(default=timezone.now())
     valor = models.DecimalField(max_digits=10, decimal_places=2)
@@ -19,6 +19,6 @@ class FluxoDeCaixa(models.Model):
         return self.descricao + " - R$ " + str(self.valor)
 
     class Meta:
-        ordering = ["-data_hora", "descricao"]
+        ordering = ["categoria", "-data", "descricao"]
         verbose_name = "fluxo de caixa"
         verbose_name_plural = "fluxos de caixa"
