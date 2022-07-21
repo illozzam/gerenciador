@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class HttpsConfig(AppConfig):
-    name = 'https'
+    name = "https"

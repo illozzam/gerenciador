@@ -5,4 +5,4 @@ from .models import Chave
 
 @admin.register(Chave)
 class ChaveAdmin(admin.ModelAdmin):
-    list_display = ['chave', 'data_hora', 'verificada']
+    list_display = ["chave", "data_hora", "verificada"]
