@@ -165,7 +165,7 @@ class Converter:
 
 
   def convert(self, outputFile):
-    print 'Generating '+outputFile
+    print(f'Generating {outputFile}')
 
     self.loadData()
 

@@ -9,7 +9,9 @@ class FluxoDeCaixa(models.Model):
         ["S", "Saída"],
     ]
 
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, null=True, blank=True)
+    categoria = models.ForeignKey(
+        Categoria, on_delete=models.CASCADE, null=True, blank=True
+    )
     tipo = models.CharField(max_length=1, choices=tipos_fluxo)
     data = models.DateField(default=timezone.now())
     valor = models.DecimalField(max_digits=10, decimal_places=2)

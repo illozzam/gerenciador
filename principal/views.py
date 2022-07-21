@@ -4,13 +4,13 @@ from django.views import View
 
 
 class TelaView(LoginRequiredMixin, View):
-	tela = 'inicial'
+    tela = "inicial"
 
-	def get(self, request):
-		if self.tela == 'inicial':
-			template = 'base.html'
+    def get(self, request):
+        if self.tela == "inicial":
+            template = "base.html"
 
-		elif self.tela == 'usuario-perfil':
-			template = 'telas/usuario-perfil.html'
+        elif self.tela == "usuario-perfil":
+            template = "telas/usuario-perfil.html"
 
-		return render(request, template)
+        return render(request, template)
