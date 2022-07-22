@@ -26,6 +26,18 @@
 					</div>
 
 					<div class="row" style="padding-top: 10px;">
+						<div class="col-md-2 text-right">Categoria:</div>
+						<div class="col-md-10">
+							<select class="form-control" id="categoria">
+								<option value="0">Selecione</option>
+								{% for categoria in categorias %}
+									<option value="{{categoria.id}}">{{categoria.nome}}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="row" style="padding-top: 10px;">
 						<div class="col-md-1 text-right">Tipo:</div>
 						<div class="col-md-5"><select id="cadastro_tipo" class="form-control">
 								<option value="0" selected disabled>Selecione...</option>
@@ -34,7 +46,7 @@
 							</select></div>
 
 						<div class="col-md-2 text-right">Data e Hora:</div>
-						<div class="col-md-4"><input type="text" class="form-control" id="cadastro_data_hora"></div>
+						<div class="col-md-4"><input type="text" class="form-control" id="cadastro_data"></div>
 					</div>
 
 					<div class="row" style="padding-top: 10px;">
@@ -60,7 +72,7 @@
 		<div class="col-md-6">
 			<div class="box">
 				<div class="box-header with-border">
-					<div class="box-title">Upload Extrato Bancário</div>
+					<div class="box-title">Upload Extrato Bancário - Última data: {{ultima_data_extrato_bancario}}</div>
 				</div>
 				<div class="box-body">
 					<div class="row">
@@ -105,7 +117,7 @@
 						</div>
 					</div>
 				</div>
-			</div>			
+			</div>
 		</div>
 	</div>
 
@@ -173,20 +185,17 @@
 
 {% block cabecalho %}
 	<link rel="stylesheet" href="{% static 'bibliotecas/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css' %}">
-	<link rel="stylesheet" href="{% static 'bibliotecas/bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}">
 {% endblock cabecalho %}
 
 {% block processamento %}
 	<script src="{% static 'bibliotecas/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script>
 	<script src="{% static 'bibliotecas/bootstrap-datepicker/dist/locales/bootstrap-datepicker.pt-BR.min.js' %}"></script>
 
-	<script src="{% static 'bibliotecas/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
-
 	<script src="{% static 'js/boletosBancarios.js' %}"></script>
 
 	<script type="text/javascript">
 		function verifica_formulario_cadastro() {
-			if ($('#cadastro_tipo').val() != '0' && $('#cadastro_data_hora').val() != '' && $('#cadastro_descricao').val() != '' && $('#cadastro_valor').val() != '') {
+			if ($('#cadastro_tipo').val() != '0' && $('#cadastro_data').val() != '' && $('#cadastro_descricao').val() != '' && $('#cadastro_valor').val() != '') {
 				return true
 			} else {
 				return false
@@ -203,8 +212,9 @@
 
 		function limpa_formulario_cadastro() {
 			$('#codigo_barras').val('')
+			$('#categoria').val('0')
 			$('#cadastro_tipo').val('0')
-			$('#cadastro_data_hora').val('')
+			$('#cadastro_data').val('')
 			$('#cadastro_descricao').val('')
 			$('#cadastro_valor').val('')
 		}
@@ -212,19 +222,15 @@
 		function cadastrar_fluxo_de_caixa() {
 			if (verifica_formulario_cadastro()) {
 				dados = {
+					categoria: $('#categoria').val(),
 					tipo: $('#cadastro_tipo').val(),
-					data_hora: $('#cadastro_data_hora').val(),
+					data: $('#cadastro_data').val(),
 					descricao: $('#cadastro_descricao').val(),
 					valor: $('#cadastro_valor').val()
 				}
 
 				{% if perms.financeiro.add_fluxodecaixa %}
-					$.ajax({
-						type: 'PUT',
-						url: '{% url 'financeiro:fluxo-de-caixa' %}',
-						contentType: 'application/json',
-						data: dados
-					})
+					$.post('{% url 'financeiro:fluxo-de-caixa' %}', dados)
 					.done(function(resposta) {
 						if (resposta.status == 200) {
 							swal({
@@ -416,9 +422,9 @@
 				codigo = calcula_barra(codigo_barras)
 				var vencimento = fator_vencimento(codigo.substr(5, 4))
 				$('#cadastro_tipo').val('S')
-				//$('#cadastro_data_hora').val(moment(new Date).format('DD/MM/YYYY HH:mm'))
+				//$('#cadastro_data').val(moment(new Date).format('DD/MM/YYYY HH:mm'))
 				$('#cadastro_valor').val(codigo.substr(9, 8)*1 + ',' + codigo.substr(17, 2))
-				$('#cadastro_data_hora').focus()
+				$('#cadastro_data').focus()
 			}
 		}
 
@@ -430,8 +436,11 @@
 				todayHighlight: true
 			});
 
-			$('#cadastro_data_hora').datetimepicker({
-				locale: 'pt-BR'
+			$('#cadastro_data').datepicker({
+				format: "yyyy-mm-dd",
+				todayBtn: true,
+				language: "pt-BR",
+				todayHighlight: true
 			});
 		})
 	</script>

@@ -8,11 +8,18 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from financeiro.models import ContasAPagar, FluxoDeCaixa
+from financeiro.models import ContasAPagar
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class ContasAPagarView(LoginRequiredMixin, View):
+    def __reportar_pagamento(self, id_conta: int) -> int:
+        conta = ContasAPagar.objects.get(id=id_conta)
+        conta.pago = True
+        conta.save()
+        return 200
+
+
     def get(self, request, **kwargs):
         template = "financeiro/contas_a_pagar.html"
         contexto = {
@@ -20,13 +27,12 @@ class ContasAPagarView(LoginRequiredMixin, View):
         }
         return render(request, template, contexto)
 
-    def put(self, request, **kwargs):
-        payload = parse_qs(request.body.decode())
+    def post(self, request, **kwargs):
         resposta = dict()
 
-        if payload.get("codigo_barras"):
+        if request.POST.get("codigo_barras"):
             codigo_barras = (
-                payload["codigo_barras"][0]
+                request.POST["codigo_barras"]
                 .replace(" ", "")
                 .replace(".", "")
                 .replace("-", "")
@@ -42,9 +48,9 @@ class ContasAPagarView(LoginRequiredMixin, View):
             codigo_barras = ""
 
         dados_cadastro = {
-            "data": datetime.strptime(payload["data"][0], "%Y-%m-%d"),
-            "valor": float(payload["valor"][0].replace(",", ".")),
-            "descricao": payload["descricao"][0],
+            "data": datetime.fromisoformat(request.POST["data"]),
+            "valor": float(request.POST["valor"].replace(",", ".")),
+            "descricao": request.POST["descricao"],
             "codigo_barras": codigo_barras,
         }
         conta = ContasAPagar.objects.create(**dados_cadastro)
@@ -53,24 +59,17 @@ class ContasAPagarView(LoginRequiredMixin, View):
         resposta["status"] = 200
         return JsonResponse(resposta, safe=False)
 
-    def post(self, request, **kwargs):
+    def put(self, request, **kwargs):
+        payload = parse_qs(request.body.decode())
         resposta = dict()
 
-        if request.POST.get("acao") == "alterar-data":
-            conta = ContasAPagar.objects.get(id=request.POST["id_conta"])
-            conta.data = request.POST.get("data")
+        if payload["acao"][0] == "alterar-data":
+            conta = ContasAPagar.objects.get(id=payload["id_conta"][0])
+            conta.data = payload["data"][0]
             conta.save()
             resposta["status"] = 200
-        elif request.POST.get("acao") == "reportar-pagamento":
-            conta = ContasAPagar.objects.get(id=request.POST["id_conta"])
-            conta.pago = True
-            conta.save()
-
-            FluxoDeCaixa.objects.create(
-                tipo="S", descricao=conta.descricao, valor=conta.valor
-            )
-
-            resposta["status"] = 200
+        elif payload["acao"][0] == "reportar-pagamento":
+            resposta['status'] = self.__reportar_pagamento(payload["id_conta"][0])
         return JsonResponse(resposta)
 
     def delete(self, request, **kwargs):

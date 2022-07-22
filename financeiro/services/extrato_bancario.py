@@ -23,10 +23,13 @@ class ExtratoBancarioService:
     def __atualiza_ultima_data_extrato_bancario(
         cls, movimentacoes: List[FluxoDeCaixa], ultima_data: datetime.date
     ) -> None:
-        if movimentacoes[-1].data > ultima_data:
-            Config.objects.filter(variavel="ultima_data_extrato_bancario").update(
-                valor=movimentacoes[-1].data.isoformat()
-            )
+        try:
+            if movimentacoes[-1].data > ultima_data:
+                Config.objects.filter(variavel="ultima_data_extrato_bancario").update(
+                    valor=movimentacoes[-1].data.isoformat()
+                )
+        except IndexError:
+            raise IndexError("Nenhuma movimentação encontrada após a última data cadastrada")
 
     @classmethod
     def extrair(cls, arquivo) -> List[FluxoDeCaixa]:
@@ -62,6 +65,8 @@ class ExtratoBancarioService:
                 )
             )
             cls.__atualiza_ultima_data_extrato_bancario(movimentacoes, ultima_data)
+        except IndexError:
+            raise IndexError("Nenhuma movimentação encontrada após a última data cadastrada")
         except Exception as erro:
             raise Exception(erro)
 

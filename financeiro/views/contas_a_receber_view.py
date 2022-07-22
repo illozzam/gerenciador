@@ -8,25 +8,21 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from financeiro.models import ContasAReceber, FluxoDeCaixa
+from financeiro.models import ContasAReceber
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class ContasAReceberView(LoginRequiredMixin, View):
-    def alterar_data(self, id_conta, data):
+    def __alterar_data(self, id_conta, data):
         conta = ContasAReceber.objects.get(id=id_conta)
         conta.data = data
         conta.save()
         return 200
 
-    def reportar_recebimento(self, id_conta):
+    def __reportar_recebimento(self, id_conta):
         conta = ContasAReceber.objects.get(id=id_conta)
         conta.recebido = True
         conta.save()
-
-        FluxoDeCaixa.objects.create(
-            tipo="E", descricao=conta.descricao, valor=conta.valor
-        )
         return 200
 
     def get(self, request, **kwargs):
@@ -40,31 +36,30 @@ class ContasAReceberView(LoginRequiredMixin, View):
         payload = parse_qs(request.body.decode())
         resposta = dict()
 
-        conta = ContasAReceber.objects.create(
-            data=datetime.strptime(payload["data"][0], "%Y-%m-%d"),
-            valor=float(payload["valor"][0].replace(",", ".")),
-            descricao=payload["descricao"][0],
-        )
-
-        resposta["conta"] = serialize("json", [conta])
-        resposta["status"] = 200
+        if ContasAReceber.objects.filter(id=payload['id_conta'][0]).exists():
+            if payload['acao'][0] == "alterar-data":
+                resposta["status"] = self.__alterar_data(
+                    payload['id_conta'][0], payload['data'][0]
+                )
+            elif payload['acao'][0] == "reportar-recebimento":
+                resposta["status"] = self.__reportar_recebimento(
+                    payload['id_conta'][0]
+                )
+        else:
+            resposta["status"] = 404
         return JsonResponse(resposta)
 
     def post(self, request, **kwargs):
         resposta = dict()
 
-        if ContasAReceber.objects.filter(id=request.POST.get("id_conta")).exists():
-            if request.POST.get("acao") == "alterar-data":
-                resposta["status"] = self.alterar_data(
-                    request.POST.get("id_conta"), request.POST.get("data")
-                )
-                return JsonResponse(resposta)
-            elif request.POST.get("acao") == "reportar-recebimento":
-                resposta["status"] = self.reportar_recebimento(
-                    request.POST.get("id_conta")
-                )
-        else:
-            resposta["status"] = 404
+        conta = ContasAReceber.objects.create(
+            data=datetime.fromisoformat(request.POST.get('data')),
+            valor=float(request.POST.get('valor').replace(',', '.')),
+            descricao=request.POST.get('descricao'),
+        )
+
+        resposta["conta"] = serialize("json", [conta])
+        resposta["status"] = 200
         return JsonResponse(resposta)
 
     def delete(self, request, **kwargs):

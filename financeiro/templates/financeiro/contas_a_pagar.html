@@ -130,11 +130,7 @@
 
 				{% if perms.financeiro.add_contasapagar %}
 
-					$.ajax({
-						url: '{% url 'financeiro:contas-a-pagar' %}',
-						type: 'PUT',
-						data: dados,
-					})
+					$.post('{% url 'financeiro:contas-a-pagar' %}', dados)
 					.done(function(resposta){
 						if (resposta.status == 200) {
 							conta = JSON.parse(resposta.conta)
@@ -202,7 +198,12 @@
 			}
 
 			{% if perms.financeiro.change_contasapagar %}
-				$.post('{% url 'financeiro:contas-a-pagar' %}', dados_requisicao)
+				$.ajax({
+					type: 'PUT',
+					url: '{% url 'financeiro:contas-a-pagar' %}',
+					contentType: 'application/json',
+					data: dados_requisicao
+				})
 				.done(function(resposta) {
 					if (resposta.status == 200) {
 						evento = $('#calendario').fullCalendar('clientEvents', id_conta)[0]
@@ -334,7 +335,11 @@
 						id_conta: event.id,
 						data: moment(event.start).format('YYYY-MM-DD')
 					}
-					$.post('{% url 'financeiro:contas-a-pagar' %}', dados_requisicao)
+					$.ajax({
+						type: 'PUT',
+						url: '{% url 'financeiro:contas-a-pagar' %}',
+						data: dados_requisicao,
+					})
 					.done(function(resposta) {
 						if (resposta.status != 200) {
 							$('#alertas').html('<div class="alert alert-danger">Ocorreu um erro ao modificar o registro. Informe um administrador do sistema</div>')
