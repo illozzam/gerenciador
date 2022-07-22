@@ -6,5 +6,5 @@ from financeiro.models import FluxoDeCaixa
 class FluxoDeCaixaAdmin(admin.ModelAdmin):
     list_display = ["descricao", "tipo", "data", "valor"]
     list_editable = ["valor"]
-    list_filter = ["data", "tipo"]
+    list_filter = ["data", "tipo", "categoria"]
     search_fields = ["descricao"]

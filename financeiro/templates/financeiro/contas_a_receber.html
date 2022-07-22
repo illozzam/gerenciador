@@ -111,12 +111,7 @@
 					descricao: $('#descricao').val()
 				}
 
-				$.ajax({
-					type: 'PUT',
-					url: '{% url 'financeiro:contas-a-receber' %}',
-					contentType: 'application/json',
-					data: dados_requisicao,
-				})
+				$.post('{% url 'financeiro:contas-a-receber' %}', dados_requisicao)
 				.done(function(resposta){
 					if (resposta.status == 200) {
 						conta = JSON.parse(resposta.conta)
@@ -182,7 +177,12 @@
 			}
 
 			{% if perms.financeiro.change_contasareceber %}
-				$.post('{% url 'financeiro:contas-a-receber' %}', dados_requisicao)
+				$.ajax({
+					type: 'PUT',
+					contentType: 'application/json',
+					url: '{% url 'financeiro:contas-a-receber' %}',
+					data: dados_requisicao
+				})
 				.done(function(resposta) {
 					if (resposta.status == 200) {
 						evento = $('#calendario').fullCalendar('clientEvents', id_conta)[0]
@@ -305,7 +305,11 @@
 						id_conta: event.id,
 						data: moment(event.start).format('YYYY-MM-DD')
 					}
-					$.post('{% url 'financeiro:contas-a-receber' %}', dados_requisicao)
+					$.ajax({
+						type: 'PUT',
+						url: '{% url 'financeiro:contas-a-receber' %}',
+						data: dados_requisicao,
+					})
 					.done(function(resposta) {
 						if (resposta.status != 200) {
 							swal(
