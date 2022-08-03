@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+cd gerenciador
+python manage.py makemigrations
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py runserver 0.0.0.0:8000
