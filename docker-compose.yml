@@ -5,23 +5,26 @@ services:
     image: mysql:5.7
     ports:
       - 3306:3306
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
   gerenciador:
     build: .
-    command: ['./inicio.sh']
-    # stdin_open: true
-    # tty: true
+    command: >
+      gunicorn -b 0.0.0.0:8000 gerenciador.wsgi --workers=1 --threads=4 --reload
     # entrypoint: "gunicorn -b 0.0.0.0:8000 gerenciador.wsgi --workers=1 --threads=4 --reload"
     volumes:
       - .:/gerenciador/
     ports:
-      - "8080:8000"
+      - "8000:8000"
     links:
       - database
     depends_on:
       - database
-    environment:
-      - MYSQL_DATABASE=gerenciador
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=p4ssw0rd
-      - MYSQL_PORT=3306
+    env_file:
+      - .env
+
+volumes:
+  database_data:
