@@ -12,16 +12,21 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
+import environ
+
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env.read_env(env_file=BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 SECRET_KEY = (
     os.environ.get("DJANGO_SECRET_KEY")
@@ -94,12 +99,7 @@ DATABASES = {
     #     "ENGINE": "django.db.backends.sqlite3",
     #     "NAME": BASE_DIR / "db.sqlite3",
     # }
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("MYSQL_DATABASE"),
-        "USER": os.environ.get("MYSQL_USER"),
-        "PASSWORD": os.environ.get("MYSQL_PASSWORD"),
-    }
+    "default": env.db("DATABASE_URL")
 }
 
 
@@ -148,7 +148,6 @@ STATIC_ROOT = BASE_DIR / "static"
 STATICFILES_DIRS = [
     ["css", STATIC_ROOT / "css"],
     ["js", STATIC_ROOT / "js"],
-    ["fonts", STATIC_ROOT / "fonts"],
     ["imagens", STATIC_ROOT / "imagens"],
     ["bibliotecas", STATIC_ROOT / "bibliotecas"],
 ]

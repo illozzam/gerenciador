@@ -3,18 +3,21 @@ version: '3.3'
 services:
   database:
     image: mysql:5.7
+    container_name: database
     ports:
-      - 3306:3306
+      - '3306:3306'
     env_file:
       - .env
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - database_data:/var/lib/mysql
 
   gerenciador:
+    container_name: gerenciador
     build: .
     command: >
       gunicorn -b 0.0.0.0:8000 gerenciador.wsgi --workers=1 --threads=4 --reload
-    # entrypoint: "gunicorn -b 0.0.0.0:8000 gerenciador.wsgi --workers=1 --threads=4 --reload"
     volumes:
       - .:/gerenciador/
     ports:
