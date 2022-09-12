@@ -1,5 +1,6 @@
 *.pyc
 db.sqlite3
-fixtures
-migrations
 .magicindex.json
+.env
+.idea
+static/admin
