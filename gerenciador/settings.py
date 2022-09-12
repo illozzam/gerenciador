@@ -24,6 +24,7 @@ SECRET_KEY = (
 )
 
 ALLOWED_HOSTS = [
+    "localhost",
     "gerenciador.mazzollisistemas.com.br",
 ]
 

@@ -8,7 +8,8 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from financeiro.models import FluxoDeCaixa, Categoria
+from financeiro.models import Categoria, FluxoDeCaixa
+from principal.models import Config
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -18,7 +19,12 @@ class FluxoDeCaixaView(LoginRequiredMixin, View):
             not "data_inicial" in request.GET.keys()
             or not "data_final" in request.GET.keys()
         ):
-            contexto = {"categorias": Categoria.objects.all()}
+            contexto = {
+                "categorias": Categoria.objects.all(),
+                "ultima_data_extrato_bancario": datetime.fromisoformat(
+                    Config.objects.get(variavel="ultima_data_extrato_bancario").valor
+                ).strftime("%d/%m/%Y"),
+            }
             template = "financeiro/fluxo_de_caixa.html"
             return render(request, template, contexto)
         else:
