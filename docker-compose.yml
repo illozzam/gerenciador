@@ -16,12 +16,15 @@ services:
   gerenciador:
     container_name: gerenciador
     build: .
-    command: >
-      gunicorn -b 0.0.0.0:8000 gerenciador.wsgi --workers=1 --threads=4 --reload
+    command:
+      - bash
+      - -c
+      - "gunicorn -b 0.0.0.0:8000 gerenciador.wsgi --workers=1 --threads=4 --reload && service nginx start"
     volumes:
       - .:/gerenciador/
+      - static_files:/gerenciador/static/
     ports:
-      - "8000:8000"
+      - "2345:80"
     links:
       - database
     depends_on:
@@ -31,3 +34,4 @@ services:
 
 volumes:
   database_data:
+  static_files:

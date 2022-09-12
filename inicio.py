@@ -70,4 +70,7 @@ class Inicio:
         )
 
 
-Inicio()
+if not Config.objects.filter(variavel="ultima_data_extrato_bancario").exists():
+    Inicio()
+else:
+    print("Inicio já foi executado")

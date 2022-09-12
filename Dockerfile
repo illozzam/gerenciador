@@ -9,6 +9,7 @@ FROM python:3.10
 
 # Working directory
 RUN mkdir /gerenciador
+RUN mkdir /logs
 WORKDIR /gerenciador
 
 # Environment variables
@@ -17,6 +18,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y netcat
+RUN apt-get install -y nginx
 
 # Install Python dependencies
 RUN pip install -U pip && pip install -U setuptools
@@ -25,9 +27,10 @@ RUN pip install -r /gerenciador/requirements.txt
 
 # Copy project files
 COPY . /gerenciador/
+COPY extras/nginx.conf /etc/nginx/nginx.conf
 
-# Migrations and static files
-RUN python manage.py wait_for_db
+RUN rm /etc/nginx/sites-enabled/default
+# RUN python manage.py wait_for_db
 RUN python manage.py migrate
 RUN python manage.py shell < inicio.py
 RUN python manage.py collectstatic --noinput

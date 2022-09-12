@@ -2,3 +2,5 @@
 db.sqlite3
 .magicindex.json
 .env
+.idea
+static/admin
