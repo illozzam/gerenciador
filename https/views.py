@@ -1,17 +1,16 @@
 from django.http import HttpResponse
 from django.views import View
+from https.models import HTTPSKey
 
-from .models import Chave
 
-
-class PrincipalView(View):
+class HTTPSView(View):
     def get(self, request, **kwargs):
-        if Chave.objects.filter(chave=self.kwargs["chave"]).exists():
-            chave = Chave.objects.get(chave=self.kwargs["chave"])
-            saida = "{}.{}".format(self.kwargs["chave"], chave.senha)
+        if HTTPSKey.objects.filter(chave=self.kwargs["key"]).exists():
+            key = HTTPSKey.objects.get(chave=self.kwargs["key"])
+            output = "{}.{}".format(self.kwargs["key"], key.password)
 
-            chave.verificada = True
-            chave.save()
+            key.verificada = True
+            key.save()
         else:
-            saida = "0"
-        return HttpResponse(saida)
+            output = "0"
+        return HttpResponse(output)

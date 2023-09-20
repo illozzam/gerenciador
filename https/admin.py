@@ -1,8 +1,7 @@
 from django.contrib import admin
+from https.models import HTTPSKey
 
-from .models import Chave
 
-
-@admin.register(Chave)
-class ChaveAdmin(admin.ModelAdmin):
-    list_display = ["chave", "data_hora", "verificada"]
+@admin.register(HTTPSKey)
+class HTTPSKeyAdmin(admin.ModelAdmin):
+    list_display = ["key", "date_created", "verified"]

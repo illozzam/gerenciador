@@ -12,13 +12,16 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='HTTPSKey',
+            name='Config',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_created', models.DateTimeField(auto_now_add=True)),
-                ('key', models.CharField(max_length=43)),
-                ('password', models.CharField(max_length=43)),
-                ('verified', models.BooleanField(default=False)),
+                ('variable', models.CharField(max_length=50, unique=True)),
+                ('value', models.CharField(blank=True, max_length=400, null=True)),
             ],
+            options={
+                'verbose_name': 'configuração',
+                'verbose_name_plural': 'configurações',
+                'ordering': ['variable'],
+            },
         ),
     ]

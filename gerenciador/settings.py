@@ -39,9 +39,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "https",
-    "autenticacao",
-    "principal",
-    "financeiro",
+    "authentication",
+    "main",
+    "financial",
     #'django_cron',
 ]
 
@@ -83,7 +83,14 @@ WSGI_APPLICATION = "gerenciador.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {"default": env.db("DATABASE_URL")}
+DATABASES = {
+    "default": {
+        "HOST": os.environ.get("MYSQL_HOST"),
+        "DATABASE": "gerenciador",
+        "USER": "root",
+        "PASSWORD": os.environ.get("MYSQL_ROOT_PASSWORD"),
+    }
+}
 
 
 # Password validation
@@ -118,7 +125,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-LOGIN_URL = "/autenticacao/login/"
+LOGIN_URL = "/authentication/login/"
 
 
 # Static files (CSS, JavaScript, Images)
